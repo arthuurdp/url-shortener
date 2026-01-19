@@ -38,9 +38,6 @@ public class ShortUrl {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @Column(name = "expire_at")
-    private Instant expireAt;
-
     public Long getId() {
         return id;
     }
@@ -104,13 +101,4 @@ public class ShortUrl {
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
-
-    public Instant getExpireAt() {
-        return expireAt;
-    }
-
-    public void setExpireAt(Instant expireAt) {
-        this.expireAt = expireAt;
-    }
-
 }
