@@ -32,11 +32,6 @@ public class ShortUrlController {
     @GetMapping(value = "/r/{shortKey}")
     public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
         String originalUrl = service.getOriginalUrl(shortKey);
-
-        if (!originalUrl.startsWith("http")) {
-            originalUrl = "https://" + originalUrl;
-        }
-
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(originalUrl)).build();
     }

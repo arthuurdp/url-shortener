@@ -9,7 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 import static com.arthuurdp.shortener.domain.services.ShortKeyGenerator.generate;
 
@@ -28,6 +28,7 @@ public class ShortUrlService {
         url.setOriginalUrl(dto.originalUrl());
         url.setShortKey(generate());
         url.setCreatedAt(Instant.now());
+        url.setExpiresAt(url.getCreatedAt().plus(7, ChronoUnit.DAYS));
 
         repo.save(url);
         return entityMapper.toShortUrlDTO(url);
@@ -39,8 +40,11 @@ public class ShortUrlService {
                 .orElseThrow(() -> new ResourceNotFoundException("Original url not found: " + shortKey));
     }
 
-    @Transactional
     public void deleteByShortKey(String shortKey) {
         repo.deleteByShortKey(shortKey);
+    }
+
+    public void deleteByExpiresAtBefore() {
+        repo.deleteByExpiresAtBefore(Instant.now());
     }
 }
