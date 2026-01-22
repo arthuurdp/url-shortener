@@ -12,10 +12,8 @@ public class EntityMapper {
 
     public ShortUrlDTO toShortUrlDTO(ShortUrl shortUrl) {
         return new ShortUrlDTO(
-                shortUrl.getId(),
                 shortUrl.getShortKey(),
-                shortUrl.getOriginalUrl(),
-                shortUrl.getCreatedAt()
+                shortUrl.getOriginalUrl()
         );
     }
 }
