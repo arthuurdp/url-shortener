@@ -1,6 +1,7 @@
 package com.arthuurdp.shortener.domain.controllers;
 
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
+import com.arthuurdp.shortener.domain.services.exceptions.StandardError;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,106 +14,96 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // local exception
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException e) {
-       Map<String, Object> response = Map.of(
-               "timestamp", Instant.now(),
-               "status", HttpStatus.NOT_FOUND.value(),
-               "error", "Not Found",
-               "message", e.getMessage()
-       );
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    public ResponseEntity<StandardError> handleResourceNotFound(ResourceNotFoundException e) {
+       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardError(
+               Instant.now(),
+               HttpStatus.NOT_FOUND.value(),
+               "Not Found",
+               e.getMessage()
+       ));
    }
 
    // if the short key was already generated
    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.CONFLICT.value(),
-                "error", "Conflict",
-                "message", "Short key already exists"
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    public ResponseEntity<StandardError> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new StandardError(
+                Instant.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                "Short key already exists"
+        ));
    }
 
    // badly written
    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "error", "Bad Request",
-                "message", "Invalid syntax"
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<StandardError> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Invalid syntax"
+        ));
    }
 
    // wrong method
    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-   public ResponseEntity<Map<String, Object>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.METHOD_NOT_ALLOWED.value(),
-                "error", "Method Not Allowed",
-                "message", "Http method not supported for this endpoint"
-        );
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+   public ResponseEntity<StandardError> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(new StandardError(
+                Instant.now(),
+                HttpStatus.METHOD_NOT_ALLOWED.value(),
+                "Method Not Allowed",
+                "Http method not supported for this endpoint"
+        ));
    }
 
    // invalid url sent
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<StandardError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldError().getDefaultMessage();
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "error", "Bad Request",
-                "message", message
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                message
+        ));
     }
 
-    // endpoint doesn't exist
+    // the endpoint doesn't exist
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.NOT_FOUND.value(),
-                "error", "Not Found",
-                "message", "Invalid path: the endpoint doesn't exist"
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    public ResponseEntity<StandardError> handleNoResourceFoundException(NoResourceFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardError(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                "Invalid path: the endpoint doesn't exist"
+        ));
     }
 
     // invalid data type
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "error", "Not Found",
-                "message", "Invalid data type"
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<StandardError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Not Found",
+                "Invalid data type"
+        ));
     }
 
     // handling unexpected errors
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception e) {
-        Map<String, Object> response = Map.of(
-                "timestamp", Instant.now(),
-                "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "error", "Internal Server Error",
-                "message", "An unexpected error occurred. Please try again later"
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    public ResponseEntity<StandardError> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new StandardError(
+                Instant.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                "An unexpected error occurred. Please try again later"
+        ));
     }
 }

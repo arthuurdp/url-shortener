@@ -10,20 +10,25 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
-import static com.arthuurdp.shortener.domain.services.ShortKeyGenerator.generate;
+import static com.arthuurdp.shortener.domain.services.ShortKeyGeneratorService.generate;
 
 @Service
 public class ShortUrlService {
     private ShortUrlRepository repo;
-    private EntityMapper entityMapper;
+    private EntityMapperService entityMapper;
 
-    public ShortUrlService(ShortUrlRepository shortUrlRepository, EntityMapper entityMapper) {
+    public ShortUrlService(ShortUrlRepository shortUrlRepository, EntityMapperService entityMapper) {
         this.repo = shortUrlRepository;
         this.entityMapper = entityMapper;
     }
 
-    public ShortUrlDTO insert(CreateShortUrlDTO dto) {
+    public List<ShortUrlDTO> getAll() {
+        return repo.findAll().stream().map(entityMapper::toShortUrlDTO).toList();
+    }
+
+    public ShortUrlDTO createShortUrl(CreateShortUrlDTO dto) {
         ShortUrl url = new ShortUrl();
         url.setOriginalUrl(dto.originalUrl());
         url.setShortKey(generate());

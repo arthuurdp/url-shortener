@@ -2,7 +2,7 @@ package com.arthuurdp.shortener.domain.services;
 
 import java.security.SecureRandom;
 
-public class ShortKeyGenerator {
+public class ShortKeyGeneratorService {
 
     private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();

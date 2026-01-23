@@ -10,6 +10,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,15 +22,13 @@ public class ShortUrlController {
         this.service = service;
     }
 
-    @GetMapping(value = "/{shortKey}")
-    public ResponseEntity<Map<String, String>> getOriginalUrl(@PathVariable String shortKey) {
-        String originalUrl = service.getOriginalUrl(shortKey);
-        Map<String, String> response = new HashMap<>();
-        response.put("originalUrl", originalUrl);
-        return ResponseEntity.ok().body(response);
+    @GetMapping
+    public ResponseEntity<List<ShortUrlDTO>> getAll() {
+        List<ShortUrlDTO> urls = service.getAll();
+        return ResponseEntity.ok().body(urls);
     }
 
-    @GetMapping(value = "/r/{shortKey}")
+    @GetMapping(value = "/{shortKey}")
     public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
         String originalUrl = service.getOriginalUrl(shortKey);
         return ResponseEntity.status(HttpStatus.FOUND)
@@ -37,8 +36,8 @@ public class ShortUrlController {
     }
 
     @PostMapping
-    public ResponseEntity<ShortUrlDTO> insert(@RequestBody CreateShortUrlDTO dto) {
-        ShortUrlDTO created = service.insert(dto);
+    public ResponseEntity<ShortUrlDTO> createShortUrl(@RequestBody CreateShortUrlDTO dto) {
+        ShortUrlDTO created = service.createShortUrl(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/{shortKey}")
