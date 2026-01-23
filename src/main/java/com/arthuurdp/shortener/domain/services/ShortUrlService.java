@@ -5,23 +5,23 @@ import com.arthuurdp.shortener.domain.entities.dtos.CreateShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.dtos.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static com.arthuurdp.shortener.domain.services.ShortKeyGeneratorService.generate;
-
 @Service
 public class ShortUrlService {
-    private ShortUrlRepository repo;
-    private EntityMapperService entityMapper;
+    private final ShortUrlRepository repo;
+    private final EntityMapperService entityMapper;
+    private final ShortKeyGeneratorService keyGenerator;
 
-    public ShortUrlService(ShortUrlRepository shortUrlRepository, EntityMapperService entityMapper) {
+    public ShortUrlService(ShortUrlRepository shortUrlRepository, EntityMapperService entityMapper, ShortKeyGeneratorService keyGenerator) {
         this.repo = shortUrlRepository;
         this.entityMapper = entityMapper;
+        this.keyGenerator = keyGenerator;
     }
 
     public List<ShortUrlDTO> getAll() {
@@ -29,9 +29,11 @@ public class ShortUrlService {
     }
 
     public ShortUrlDTO createShortUrl(CreateShortUrlDTO dto) {
+        String shortKey = keyGenerator.generate();
+
         ShortUrl url = new ShortUrl();
         url.setOriginalUrl(dto.originalUrl());
-        url.setShortKey(generate());
+        url.setShortKey(shortKey);
         url.setCreatedAt(Instant.now());
         url.setExpiresAt(url.getCreatedAt().plus(7, ChronoUnit.DAYS));
 
@@ -49,6 +51,8 @@ public class ShortUrlService {
         repo.deleteByShortKey(shortKey);
     }
 
+    // every 1 hour this method executes
+    @Scheduled(cron = "0 0 * * * *")
     public void deleteByExpiresAtBefore() {
         repo.deleteByExpiresAtBefore(Instant.now());
     }

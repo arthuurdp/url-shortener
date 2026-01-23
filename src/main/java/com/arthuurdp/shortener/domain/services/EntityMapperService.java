@@ -14,7 +14,6 @@ public class EntityMapperService {
         return new ShortUrlDTO(
                 shortUrl.getShortKey(),
                 shortUrl.getOriginalUrl(),
-                shortUrl.getCreatedAt(),
                 shortUrl.getExpiresAt()
         );
     }
