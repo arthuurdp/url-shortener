@@ -57,16 +57,13 @@ class ShortUrlServiceTest {
 
     @Test
     void testGetAll() {
-        // Arrange
         List<ShortUrl> urlList = new ArrayList<>();
         urlList.add(shortUrl);
         when(repository.findAll()).thenReturn(urlList);
         when(entityMapper.toShortUrlDTO(shortUrl)).thenReturn(shortUrlDTO);
 
-        // Act
         List<ShortUrlDTO> result = service.getAll();
 
-        // Assert
         assertEquals(1, result.size());
         assertEquals("abc123", result.get(0).shortKey());
         verify(repository).findAll();
@@ -80,10 +77,8 @@ class ShortUrlServiceTest {
         when(repository.save(any(ShortUrl.class))).thenReturn(shortUrl);
         when(entityMapper.toShortUrlDTO(any(ShortUrl.class))).thenReturn(shortUrlDTO);
 
-        // Act
         ShortUrlDTO result = service.createShortUrl(createDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals("abc123", result.shortKey());
         assertEquals("https://example.com", result.originalUrl());

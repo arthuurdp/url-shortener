@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/")
+@RequestMapping(value = "/short-urls")
 public class ShortUrlController {
     private final ShortUrlService service;
 

@@ -1,7 +1,9 @@
 package com.arthuurdp.shortener.domain.services;
 
 import com.arthuurdp.shortener.domain.entities.ShortUrl;
+import com.arthuurdp.shortener.domain.entities.User;
 import com.arthuurdp.shortener.domain.entities.dtos.ShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.dtos.UserDTO;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +17,16 @@ public class EntityMapperService {
                 shortUrl.getShortKey(),
                 shortUrl.getOriginalUrl(),
                 shortUrl.getExpiresAt()
+        );
+    }
+
+    public UserDTO toUserDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole()
         );
     }
 }

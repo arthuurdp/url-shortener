@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 public record CreateShortUrlDTO(
-        @NotBlank
+        @NotBlank(message = "Please enter a valid URL")
         @Valid
         @URL
         String originalUrl) {
