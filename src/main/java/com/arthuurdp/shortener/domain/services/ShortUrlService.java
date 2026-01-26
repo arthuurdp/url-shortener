@@ -1,8 +1,8 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.ShortUrl;
-import com.arthuurdp.shortener.domain.entities.dtos.CreateShortUrlDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.ShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
+import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;

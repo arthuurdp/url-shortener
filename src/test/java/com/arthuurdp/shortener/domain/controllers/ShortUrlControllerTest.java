@@ -1,7 +1,7 @@
 package com.arthuurdp.shortener.domain.controllers;
 
-import com.arthuurdp.shortener.domain.entities.dtos.CreateShortUrlDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.ShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.services.ShortUrlService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

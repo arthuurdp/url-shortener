@@ -1,6 +1,6 @@
 package com.arthuurdp.shortener.domain.repositories;
 
-import com.arthuurdp.shortener.domain.entities.ShortUrl;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.Instant;
 import java.util.Optional;

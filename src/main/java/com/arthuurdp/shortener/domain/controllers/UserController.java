@@ -1,9 +1,8 @@
 package com.arthuurdp.shortener.domain.controllers;
 
-import com.arthuurdp.shortener.domain.entities.User;
-import com.arthuurdp.shortener.domain.entities.dtos.CreateUserDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.UpdateUserDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.UserDTO;
+import com.arthuurdp.shortener.domain.entities.user.CreateUserDTO;
+import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserDTO;
 import com.arthuurdp.shortener.domain.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +49,6 @@ public class UserController {
         UserDTO response = service.updateUser(id, dto);
         return ResponseEntity.ok(response);
     }
-
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {

@@ -1,8 +1,8 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.User;
-import com.arthuurdp.shortener.domain.entities.dtos.UpdateUserDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.UserDTO;
+import com.arthuurdp.shortener.domain.entities.user.User;
+import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserDTO;
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
@@ -52,7 +52,6 @@ public class UserService {
         user = repo.save(user);
         return entityMapper.toUserDTO(user);
     }
-
 
     public void deleteUser(Long id) {
         repo.deleteById(id);

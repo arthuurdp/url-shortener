@@ -1,9 +1,9 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.ShortUrl;
-import com.arthuurdp.shortener.domain.entities.User;
-import com.arthuurdp.shortener.domain.entities.dtos.ShortUrlDTO;
-import com.arthuurdp.shortener.domain.entities.dtos.UserDTO;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
+import com.arthuurdp.shortener.domain.entities.user.User;
+import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserDTO;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,4 +1,4 @@
-package com.arthuurdp.shortener.domain.entities.dtos;
+package com.arthuurdp.shortener.domain.entities.user;
 
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import jakarta.validation.constraints.Email;
@@ -14,10 +14,10 @@ public record CreateUserDTO(
         String lastName,
 
         @NotBlank
-        @Email(message = "Please enter a valid e-mail")
+        @Email(message = "E-mail is required")
         String email,
 
-        @NotBlank(message = "Please enter a valid password")
+        @NotBlank(message = "Password is required")
         @Size(min = 6, message = "The password has to be at least 6 chars")
         String password,
 

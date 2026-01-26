@@ -1,4 +1,4 @@
-package com.arthuurdp.shortener.domain.entities.dtos;
+package com.arthuurdp.shortener.domain.entities.url;
 
 import java.time.Instant;
 

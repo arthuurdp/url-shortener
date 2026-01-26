@@ -1,5 +1,6 @@
-package com.arthuurdp.shortener.domain.entities;
+package com.arthuurdp.shortener.domain.entities.url;
 
+import com.arthuurdp.shortener.domain.entities.user.User;
 import jakarta.persistence.*;
 
 import java.time.Instant;
