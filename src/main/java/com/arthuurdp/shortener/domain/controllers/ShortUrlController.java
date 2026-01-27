@@ -20,12 +20,19 @@ public class ShortUrlController {
         this.service = service;
     }
 
+    // admin
     @GetMapping
     public ResponseEntity<List<ShortUrlDTO>> getAll() {
-        List<ShortUrlDTO> urls = service.getAll();
-        return ResponseEntity.ok().body(urls);
+        return ResponseEntity.ok().body(service.getAll());
     }
 
+    // admin/user
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<List<ShortUrlDTO>> getAllByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok().body(service.getAllByUserId(id));
+    }
+
+    // user
     @GetMapping(value = "/{shortKey}")
     public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
         String originalUrl = service.getOriginalUrl(shortKey);
@@ -33,6 +40,7 @@ public class ShortUrlController {
                 .location(URI.create(originalUrl)).build();
     }
 
+    // user
     @PostMapping
     public ResponseEntity<ShortUrlDTO> createShortUrl(@RequestBody CreateShortUrlDTO dto) {
         ShortUrlDTO created = service.createShortUrl(dto);
@@ -44,6 +52,7 @@ public class ShortUrlController {
         return ResponseEntity.created(uri).body(created);
     }
 
+    // admin/user
     @DeleteMapping(value = "/{shortKey}")
     public ResponseEntity<Void> deleteByShortKey(@PathVariable String shortKey) {
         service.deleteByShortKey(shortKey);

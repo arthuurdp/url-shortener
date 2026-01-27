@@ -1,5 +1,6 @@
 package com.arthuurdp.shortener.domain.services;
 
+import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserDTO;
@@ -27,18 +28,6 @@ public class UserService {
 
     public List<UserDTO> findAll() {
         return repo.findAll().stream().map(entityMapper::toUserDTO).toList();
-    }
-
-    public UserDTO createUser(String firstName, String lastName, String email, String password, Role role) {
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setRole(role);
-
-        repo.save(user);
-        return entityMapper.toUserDTO(user);
     }
 
     public UserDTO updateUser(Long id, UpdateUserDTO dto) {

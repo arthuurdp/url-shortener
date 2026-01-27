@@ -47,6 +47,10 @@ public class ShortUrlService {
                 .orElseThrow(() -> new ResourceNotFoundException("Original url not found: " + shortKey));
     }
 
+    public List<ShortUrlDTO> getAllByUserId(Long id) {
+        return repo.findAllByUserId(id).stream().map(entityMapper::toShortUrlDTO).toList();
+    }
+
     public void deleteByShortKey(String shortKey) {
         repo.deleteByShortKey(shortKey);
     }

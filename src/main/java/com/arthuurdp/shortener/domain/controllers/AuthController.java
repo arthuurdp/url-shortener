@@ -1,11 +1,10 @@
 package com.arthuurdp.shortener.domain.controllers;
 
-import com.arthuurdp.shortener.domain.entities.user.AuthDTO;
-import com.arthuurdp.shortener.domain.entities.user.CreateUserDTO;
-import com.arthuurdp.shortener.domain.entities.user.User;
-import com.arthuurdp.shortener.domain.entities.user.UserDTO;
+import com.arthuurdp.shortener.domain.entities.user.*;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
+import com.arthuurdp.shortener.domain.services.AuthService;
 import com.arthuurdp.shortener.domain.services.EntityMapperService;
+import com.arthuurdp.shortener.infrastructure.security.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,46 +22,36 @@ import java.net.URI;
 @RequestMapping("/auth")
 public class AuthController{
     private final AuthenticationManager authManager;
-    private final EntityMapperService entityMapper;
-    private final UserRepository repo;
+    private final AuthService service;
+    private final TokenService tokenService;
 
-    public AuthController(AuthenticationManager authManager, EntityMapperService entityMapper, UserRepository repo) {
+    public AuthController(AuthenticationManager authManager, AuthService service, TokenService tokenService) {
         this.authManager = authManager;
-        this.entityMapper = entityMapper;
-        this.repo = repo;
+        this.service = service;
+        this.tokenService = tokenService;
     }
 
+    // user
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AuthDTO dto) {
         var authToken = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
         var auth = this.authManager.authenticate(authToken);
 
+        var token = tokenService.generateToken((User) auth.getPrincipal());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
+    // admin
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody @Valid CreateUserDTO dto) {
-        if (this.repo.findByEmail(dto.email()) != null) {
-            return ResponseEntity.badRequest().build();
-        } else {
-            String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
-            User user = new User(
-                    dto.firstName(),
-                    dto.lastName(),
-                    dto.email(),
-                    encryptedPassword,
-                    dto.role()
-            );
-            repo.save(user);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(dto.email())
-                .toUri();
-        return ResponseEntity.created(uri).body(entityMapper.toUserDTO(user));
-    }
+        UserDTO response = service.register(dto);
+            URI uri = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(dto.email())
+                    .toUri();
+            return ResponseEntity.created(uri).body(response);
+        }
     }
 
-}

@@ -1,6 +1,7 @@
 package com.arthuurdp.shortener.infrastructure.config;
 
 import com.arthuurdp.shortener.domain.services.EntityMapperService;
+import com.arthuurdp.shortener.infrastructure.security.SecurityFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,23 +13,34 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
     private final AuthenticationConfiguration authConfiguration;
-    private final EntityMapperService entityMapper;
+    private final SecurityFilter securityFilter;
 
-    public SecurityConfiguration(AuthenticationConfiguration authConfiguration, EntityMapperService entityMapper) {
+    public SecurityConfiguration(AuthenticationConfiguration authConfiguration, SecurityFilter securityFilter) {
         this.authConfiguration = authConfiguration;
-        this.entityMapper = entityMapper;
+        this.securityFilter = securityFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/product").hasRole("USER").anyRequest().authenticated())
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/short-urls/{shortKey}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/short-urls").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/short-urls").hasRole("ADMIN")
+                        .requestMatchers("/users/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -42,8 +54,5 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public EntityMapperService entityMapper() {
-        return new EntityMapperService();
-    }
+
 }
