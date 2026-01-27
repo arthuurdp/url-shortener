@@ -2,6 +2,7 @@ package com.arthuurdp.shortener.domain.entities.user;
 
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,7 +35,8 @@ public class User implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<ShortUrl> shortUrls;
 
     public User() {
@@ -47,8 +49,6 @@ public class User implements UserDetails {
         this.password = password;
         this.role = role;
     }
-
-
 
     public User(Long id, String firstName, String lastName, String email, String password, Role role) {
         this.id = id;

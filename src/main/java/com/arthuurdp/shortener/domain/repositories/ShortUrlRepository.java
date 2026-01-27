@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
     void deleteByExpiresAtBefore(Instant now);
     void deleteByShortKey(String shortKey);
-    List<ShortUrl> findAllByUserId(Long userId);
+    List<ShortUrl> findAllByUserId(Long id);
 
     Optional<ShortUrl> findByShortKey(String shortKey);
 }

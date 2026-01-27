@@ -1,10 +1,8 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
-import com.arthuurdp.shortener.domain.entities.user.UserDTO;
-import com.arthuurdp.shortener.domain.entities.enums.Role;
+import com.arthuurdp.shortener.domain.entities.user.UserResponseDTO;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,23 +19,33 @@ public class UserService {
         this.entityMapper = entityMapper;
     }
 
-    public UserDTO findById(Long id) {
-        User dto = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found " + id));
+    public UserResponseDTO findById(Long id) {
+        User dto = repo.findByIdWithShortUrls(id).orElseThrow(() -> new ResourceNotFoundException("User not found " + id));
         return entityMapper.toUserDTO(dto);
     }
 
-    public List<UserDTO> findAll() {
-        return repo.findAll().stream().map(entityMapper::toUserDTO).toList();
+    public List<UserResponseDTO> findAll() {
+        return repo.findAllWithShortUrls().stream().map(entityMapper::toUserDTO).toList();
     }
 
-    public UserDTO updateUser(Long id, UpdateUserDTO dto) {
+    public UserResponseDTO updateUser(Long id, UpdateUserDTO dto) {
         User user = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("No user was found with id " + id));
 
-        user.setFirstName(dto.firstName());
-        user.setLastName(dto.lastName());
-        user.setEmail(dto.email());
-        user.setPassword(dto.password());
-
+        if (dto.firstName() != null) {
+            user.setFirstName(dto.firstName());
+        }
+        if (dto.lastName() != null) {
+            user.setLastName(dto.lastName());
+        }
+        if (dto.email() != null) {
+            user.setEmail(dto.email());
+        }
+        if (dto.password() != null) {
+            user.setPassword(dto.password());
+        }
+        if (dto.role() != null) {
+            user.setRole(dto.role());
+        }
         user = repo.save(user);
         return entityMapper.toUserDTO(user);
     }

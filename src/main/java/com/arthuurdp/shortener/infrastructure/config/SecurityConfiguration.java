@@ -1,6 +1,5 @@
 package com.arthuurdp.shortener.infrastructure.config;
 
-import com.arthuurdp.shortener.domain.services.EntityMapperService;
 import com.arthuurdp.shortener.infrastructure.security.SecurityFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +32,11 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/short-urls/{shortKey}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/short-urls").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/short-urls/{shortKey}").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/short-urls").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasRole("USER")
+
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -53,6 +53,4 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.arthuurdp.shortener.domain.entities.url;
 
 import com.arthuurdp.shortener.domain.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -24,6 +25,7 @@ public class ShortUrl {
     @Column(nullable = false, updatable = false)
     private Instant expiresAt;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -71,4 +73,6 @@ public class ShortUrl {
     public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
+
+
 }

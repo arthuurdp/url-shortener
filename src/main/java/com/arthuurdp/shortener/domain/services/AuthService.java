@@ -1,45 +1,63 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.user.CreateUserDTO;
-import com.arthuurdp.shortener.domain.entities.user.User;
-import com.arthuurdp.shortener.domain.entities.user.UserDTO;
+import com.arthuurdp.shortener.domain.entities.user.*;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.arthuurdp.shortener.infrastructure.security.TokenService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthService implements UserDetailsService {
+public class AuthService {
+
+    private final AuthenticationManager authManager;
+    private final TokenService tokenService;
     private final UserRepository repo;
     private final EntityMapperService entityMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository repo, EntityMapperService entityMapper) {
+    public AuthService(
+            AuthenticationManager authManager,
+            TokenService tokenService,
+            UserRepository repo,
+            EntityMapperService entityMapper,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.authManager = authManager;
+        this.tokenService = tokenService;
         this.repo = repo;
         this.entityMapper = entityMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDTO register(CreateUserDTO dto) {
-        if (this.repo.findByEmail(dto.email()) != null) {
-            throw new ResourceNotFoundException("Email " + dto.email() + " is already in use!");
-        } else {
-            String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
-            User user = new User(
-                    dto.firstName(),
-                    dto.lastName(),
-                    dto.email(),
-                    encryptedPassword,
-                    dto.role()
-            );
-            repo.save(user);
-            return entityMapper.toUserDTO(user);
+    public LoginResponseDTO login(AuthDTO dto) {
+        var tokenAuth = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
+        var auth = authManager.authenticate(tokenAuth);
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+        return new LoginResponseDTO(token);
+    }
+
+    public UserResponseDTO register(RegisterUserDTO dto) {
+        if (repo.findByEmail(dto.email()) != null) {
+            throw new ResourceNotFoundException("Email already in use");
         }
+
+        User user = new User(
+                dto.firstName(),
+                dto.lastName(),
+                dto.email(),
+                passwordEncoder.encode(dto.password()),
+                dto.role()
+        );
+
+        repo.save(user);
+        return entityMapper.toUserDTO(user);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repo.findByEmail(username);
-    }
+    public User getCurrentUser() { Authentication auth = SecurityContextHolder.getContext().getAuthentication(); return (User) auth.getPrincipal(); }
 }
+
