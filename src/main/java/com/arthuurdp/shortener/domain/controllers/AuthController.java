@@ -26,7 +26,6 @@ public class AuthController{
         return ResponseEntity.ok().body(service.login(dto));
     }
 
-    // admin
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
         UserResponseDTO response = service.register(dto);

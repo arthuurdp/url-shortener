@@ -22,9 +22,6 @@ public class ShortUrl {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(nullable = false, updatable = false)
-    private Instant expiresAt;
-
     private Instant lastClickedAt;
 
     @Column(nullable = false)
@@ -38,21 +35,19 @@ public class ShortUrl {
     public ShortUrl() {
     }
 
-    public ShortUrl(String shortKey, String originalUrl, Instant expiresAt, User user) {
+    public ShortUrl(String shortKey, String originalUrl, User user) {
         this.shortKey = shortKey;
         this.originalUrl = originalUrl;
         this.createdAt = Instant.now();
-        this.expiresAt = expiresAt;
         this.clicks = 0;
         this.user = user;
     }
 
-    public ShortUrl(Long id, String shortKey, String originalUrl, Instant createdAt, Instant expiresAt, Instant lastClickedAt, Integer clicks, User user) {
+    public ShortUrl(Long id, String shortKey, String originalUrl, Instant createdAt, Instant lastClickedAt, Integer clicks, User user) {
         this.id = id;
         this.shortKey = shortKey;
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
-        this.expiresAt = expiresAt;
         this.lastClickedAt = lastClickedAt;
         this.clicks = clicks;
         this.user = user;
@@ -60,10 +55,6 @@ public class ShortUrl {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getShortKey() {
@@ -88,14 +79,6 @@ public class ShortUrl {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(Instant expiresAt) {
-        this.expiresAt = expiresAt;
     }
 
     public Instant getLastClickedAt() {
@@ -123,9 +106,6 @@ public class ShortUrl {
     }
 
     public void incrementClicks() {
-        if (this.clicks == null) {
-            this.clicks = 0;
-        }
         this.clicks++;
         this.lastClickedAt = Instant.now();
     }

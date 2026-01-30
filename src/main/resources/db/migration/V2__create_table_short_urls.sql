@@ -3,7 +3,6 @@ CREATE TABLE short_urls (
     short_key VARCHAR(10) NOT NULL UNIQUE,
     original_url TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
     last_clicked_at TIMESTAMP NULL,
     clicks INT NOT NULL DEFAULT 0,
     user_id BIGINT,

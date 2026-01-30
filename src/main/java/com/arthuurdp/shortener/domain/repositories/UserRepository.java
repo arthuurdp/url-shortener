@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.shortUrls WHERE u.id = :id")
     Optional<User> findByIdWithShortUrls(@Param("id") Long id);
+
     @Query("SELECT u from User u LEFT JOIN FETCH u.shortUrls")
     List<User> findAllWithShortUrls();
 

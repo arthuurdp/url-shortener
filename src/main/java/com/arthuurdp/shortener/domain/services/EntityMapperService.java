@@ -25,7 +25,6 @@ public class EntityMapperService {
                 shortUrl.getShortKey(),
                 shortUrl.getOriginalUrl(),
                 shortUrl.getCreatedAt(),
-                shortUrl.getExpiresAt(),
                 shortUrl.getLastClickedAt(),
                 shortUrl.getClicks(),
                 shortUrl.getUser().getFirstName()

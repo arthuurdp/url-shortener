@@ -7,6 +7,7 @@ import com.arthuurdp.shortener.domain.services.ShortUrlService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,15 +25,10 @@ public class ShortUrlController {
 
     @GetMapping
     public ResponseEntity<List<ShortUrlDTO>> getAll() {
-        return ResponseEntity.ok().body(service.getAllAdmin());
+        return ResponseEntity.ok().body(service.getAll());
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<ShortUrlDTO> findById(@PathVariable @Valid Long id) {
-        return ResponseEntity.ok().body(service.findById(id));
-    }
-
-    @GetMapping(value = "/r/{shortKey}")
+    @GetMapping(value = "/{shortKey}")
     public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
         return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(service.getOriginalUrl(shortKey))).build();
     }

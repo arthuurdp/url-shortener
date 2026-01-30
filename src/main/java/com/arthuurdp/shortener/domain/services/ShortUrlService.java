@@ -1,5 +1,6 @@
 package com.arthuurdp.shortener.domain.services;
 
+import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
 import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
@@ -30,20 +31,27 @@ public class ShortUrlService {
         this.authService = authService;
     }
 
-    public List<ShortUrlDTO> getAllAdmin() {
-        return repo.findAllWithUserId().stream().map(entityMapper::toShortUrlDTO).toList();
+    public List<ShortUrlDTO> getAll() {
+        User user = authService.getCurrentUser();
+
+        if (user.getRole() == Role.ROLE_USER) {
+            return repo.findAllByUserId(user.getId())
+                    .stream()
+                    .map(entityMapper::toShortUrlDTO)
+                    .toList();
+        }
+
+        return repo.findAllWithUserId()
+                .stream()
+                .map(entityMapper::toShortUrlDTO)
+                .toList();
     }
 
-    public ShortUrlDTO findById(Long id) {
-        ShortUrl url = repo.findByIdWithUser(id);
-        return entityMapper.toShortUrlDTO(url);
-    }
 
     public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
         ShortUrl url = new ShortUrl(
                 keyGenerator.generate(),
                 dto.originalUrl(),
-                Instant.now().plus(7, ChronoUnit.DAYS),
                 authService.getCurrentUser()
         );
 
@@ -70,9 +78,10 @@ public class ShortUrlService {
         repo.deleteById(id);
     }
 
-    // every 1 hour this method executes
-    @Scheduled(cron = "0 0 * * * *")
-    public void deleteByExpiresAtBefore() {
-        repo.deleteByExpiresAtBefore(Instant.now());
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *")
+    public void deleteInactiveUrls() {
+        Instant limit = Instant.now().minus(60, ChronoUnit.DAYS);
+        repo.deleteAllInactive(limit);
     }
 }
