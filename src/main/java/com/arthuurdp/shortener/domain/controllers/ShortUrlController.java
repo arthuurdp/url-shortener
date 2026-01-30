@@ -24,12 +24,12 @@ public class ShortUrlController {
 
     @GetMapping
     public ResponseEntity<List<ShortUrlDTO>> getAll() {
-        return ResponseEntity.ok().body(service.getAll());
+        return ResponseEntity.ok().body(service.getAllAdmin());
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<List<ShortUrlDTO>> findAllByUserId(@PathVariable Long id) {
-        return ResponseEntity.ok().body(service.findAllByUserId(id));
+    public ResponseEntity<ShortUrlDTO> findById(@PathVariable @Valid Long id) {
+        return ResponseEntity.ok().body(service.findById(id));
     }
 
     @GetMapping(value = "/r/{shortKey}")
@@ -49,7 +49,7 @@ public class ShortUrlController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable @Valid Long id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

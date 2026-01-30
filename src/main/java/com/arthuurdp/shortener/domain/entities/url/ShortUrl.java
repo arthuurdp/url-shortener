@@ -25,21 +25,45 @@ public class ShortUrl {
     @Column(nullable = false, updatable = false)
     private Instant expiresAt;
 
+    private Instant lastClickedAt;
+
+    @Column(nullable = false)
+    private Integer clicks;
+
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    public User getUser() {
-        return user;
+    public ShortUrl() {
     }
 
-    public void setUser(User user) {
+    public ShortUrl(String shortKey, String originalUrl, Instant expiresAt, User user) {
+        this.shortKey = shortKey;
+        this.originalUrl = originalUrl;
+        this.createdAt = Instant.now();
+        this.expiresAt = expiresAt;
+        this.clicks = 0;
+        this.user = user;
+    }
+
+    public ShortUrl(Long id, String shortKey, String originalUrl, Instant createdAt, Instant expiresAt, Instant lastClickedAt, Integer clicks, User user) {
+        this.id = id;
+        this.shortKey = shortKey;
+        this.originalUrl = originalUrl;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.lastClickedAt = lastClickedAt;
+        this.clicks = clicks;
         this.user = user;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getShortKey() {
@@ -74,5 +98,35 @@ public class ShortUrl {
         this.expiresAt = expiresAt;
     }
 
+    public Instant getLastClickedAt() {
+        return lastClickedAt;
+    }
 
+    public void setLastClickedAt(Instant lastClickedAt) {
+        this.lastClickedAt = lastClickedAt;
+    }
+
+    public Integer getClicks() {
+        return clicks;
+    }
+
+    public void setClicks(Integer clicks) {
+        this.clicks = clicks;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void incrementClicks() {
+        if (this.clicks == null) {
+            this.clicks = 0;
+        }
+        this.clicks++;
+        this.lastClickedAt = Instant.now();
+    }
 }

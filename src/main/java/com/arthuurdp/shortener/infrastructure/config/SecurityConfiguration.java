@@ -33,8 +33,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/short-urls").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/short-urls/{shortKey}").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/short-urls").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/short-urls/**").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasRole("USER")
 
                         .requestMatchers("/users/**").hasRole("ADMIN")

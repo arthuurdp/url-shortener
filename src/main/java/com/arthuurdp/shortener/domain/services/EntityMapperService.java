@@ -25,7 +25,10 @@ public class EntityMapperService {
                 shortUrl.getShortKey(),
                 shortUrl.getOriginalUrl(),
                 shortUrl.getCreatedAt(),
-                shortUrl.getExpiresAt()
+                shortUrl.getExpiresAt(),
+                shortUrl.getLastClickedAt(),
+                shortUrl.getClicks(),
+                shortUrl.getUser().getFirstName()
         );
     }
 
@@ -36,7 +39,9 @@ public class EntityMapperService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getShortUrls()
+                user.getShortUrls().stream().map(
+                        this::toShortUrlDTO
+                ).toList()
         );
     }
 }

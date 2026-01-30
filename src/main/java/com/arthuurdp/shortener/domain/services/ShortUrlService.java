@@ -30,33 +30,32 @@ public class ShortUrlService {
         this.authService = authService;
     }
 
-    public List<ShortUrlDTO> getAll() {
-        return repo.findAll().stream().map(entityMapper::toShortUrlDTO).toList();
+    public List<ShortUrlDTO> getAllAdmin() {
+        return repo.findAllWithUserId().stream().map(entityMapper::toShortUrlDTO).toList();
+    }
+
+    public ShortUrlDTO findById(Long id) {
+        ShortUrl url = repo.findByIdWithUser(id);
+        return entityMapper.toShortUrlDTO(url);
     }
 
     public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
-        User user = authService.getCurrentUser();
-        String shortKey = keyGenerator.generate();
-
-        ShortUrl url = new ShortUrl();
-        url.setOriginalUrl(dto.originalUrl());
-        url.setShortKey(shortKey);
-        url.setCreatedAt(Instant.now());
-        url.setExpiresAt(url.getCreatedAt().plus(7, ChronoUnit.DAYS));
-        url.setUser(user);
+        ShortUrl url = new ShortUrl(
+                keyGenerator.generate(),
+                dto.originalUrl(),
+                Instant.now().plus(7, ChronoUnit.DAYS),
+                authService.getCurrentUser()
+        );
 
         repo.save(url);
         return entityMapper.toCreateShortUrlDTOResponse(url);
     }
 
+    @Transactional
     public String getOriginalUrl(String shortKey) {
-        return repo.findByShortKey(shortKey)
-                .map(ShortUrl::getOriginalUrl)
-                .orElseThrow(() -> new ResourceNotFoundException("Original url not found: " + shortKey));
-    }
-
-    public List<ShortUrlDTO> findAllByUserId(Long id) {
-        return repo.findAllByUserId(id).stream().map(entityMapper::toShortUrlDTO).toList();
+        ShortUrl url = repo.findByShortKey(shortKey).orElseThrow(() -> new ResourceNotFoundException("Original url not found: " + shortKey));
+        url.incrementClicks();
+        return url.getOriginalUrl();
     }
 
     @Transactional

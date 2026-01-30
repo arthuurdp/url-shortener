@@ -35,8 +35,8 @@ class ShortUrlControllerTest {
 
     @Test
     void getAllShouldReturnListOfShortUrlDTO() throws Exception {
-        ShortUrlDTO dto = new ShortUrlDTO(1L, "abc", "https://google.com", Instant.now(), Instant.now().plus(7, ChronoUnit.DAYS));
-        when(service.getAll()).thenReturn(List.of(dto));
+        ShortUrlDTO dto = new ShortUrlDTO(1L, "abc", "https://google.com", Instant.now(), Instant.now().plus(7, ChronoUnit.DAYS), "teste");
+        when(service.getAllAdmin()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/")
                         .accept(MediaType.APPLICATION_JSON))
@@ -44,7 +44,7 @@ class ShortUrlControllerTest {
                 .andExpect(jsonPath("$[0].shortKey").value("abc"))
                 .andExpect(jsonPath("$[0].originalUrl").value("https://google.com"));
 
-        verify(service, times(1)).getAll();
+        verify(service, times(1)).getAllAdmin();
     }
 
     @Test
