@@ -7,7 +7,7 @@ import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
-import com.arthuurdp.shortener.domain.services.exceptions.AcessDeniedException;
+import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -72,7 +72,7 @@ public class ShortUrlService {
         ShortUrl url = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("URL not found"));
 
         if (!url.getUser().getId().equals(user.getId())) {
-            throw new AcessDeniedException("You can only delete your own urls");
+            throw new AccessDeniedException("You can only delete your own urls");
         }
 
         repo.deleteById(id);
