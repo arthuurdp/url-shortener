@@ -39,7 +39,6 @@ public class UserController {
         return ResponseEntity.ok().body(service.findAll());
     }
 
-    // ---------------- GET BY ID ----------------
     @Operation(
             summary = "Get user by ID",
             description = "Returns the user identified by the given ID."

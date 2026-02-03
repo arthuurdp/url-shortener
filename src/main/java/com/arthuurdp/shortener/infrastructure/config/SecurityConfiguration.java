@@ -33,12 +33,19 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v3/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/short-urls").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/short-urls/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers("/users/**").hasRole("ADMIN")
+                        // Allow both USER and ADMIN for short-urls
+                        .requestMatchers(HttpMethod.POST, "/short-urls").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/short-urls/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        // Allow both USER and ADMIN to update users (your service has additional logic)
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        // Only ADMIN can view all users
+                        .requestMatchers(HttpMethod.GET, "/users/**").hasAuthority("ROLE_ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
