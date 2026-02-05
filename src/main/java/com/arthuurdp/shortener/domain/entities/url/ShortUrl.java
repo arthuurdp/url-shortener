@@ -43,16 +43,6 @@ public class ShortUrl {
         this.user = user;
     }
 
-    public ShortUrl(Long id, String shortKey, String originalUrl, Instant createdAt, Instant lastClickedAt, Integer clicks, User user) {
-        this.id = id;
-        this.shortKey = shortKey;
-        this.originalUrl = originalUrl;
-        this.createdAt = createdAt;
-        this.lastClickedAt = lastClickedAt;
-        this.clicks = clicks;
-        this.user = user;
-    }
-
     public Long getId() {
         return id;
     }

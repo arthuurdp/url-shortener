@@ -5,5 +5,5 @@ import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 
 import java.util.List;
 
-public record UserResponseDTO(Long id, String firstName, String lastName, String email, Role role, List<ShortUrlDTO> urls) {
+public record UserWithUrlsDTO(Long id, String firstName, String lastName, String email, Role role, List<ShortUrlDTO> urls) {
 }

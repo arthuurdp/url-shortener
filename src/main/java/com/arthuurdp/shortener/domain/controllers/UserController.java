@@ -1,7 +1,8 @@
 package com.arthuurdp.shortener.domain.controllers;
 
 import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
-import com.arthuurdp.shortener.domain.entities.user.UserResponseDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,8 +27,8 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get all users",
-            description = "Returns a list of all registered users."
+            summary = "Get all users without urls",
+            description = "Returns a list of all registered users without their urls."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
@@ -35,8 +36,25 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
-    public ResponseEntity<List<UserResponseDTO>> findAll() {
-        return ResponseEntity.ok().body(service.findAll());
+    public ResponseEntity<List<UserWithoutUrlsDTO>> findAllWithoutUrls() {
+        return ResponseEntity.ok().body(service.findAllWithoutUrls());
+    }
+
+    @Operation(
+            summary = "Get all users with urls",
+            description = "Returns a list of all registered users with their urls."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping
+    public ResponseEntity<List<?>> findAllWithUrls(@RequestParam(required = false) String include) {
+        if ("urls".equals(include)) {
+            return ResponseEntity.ok(service.findAllWithUrls());
+        }
+        return ResponseEntity.ok().body(service.findAllWithoutUrls());
     }
 
     @Operation(
@@ -50,7 +68,7 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<UserWithUrlsDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok().body(service.findById(id));
     }
 
@@ -66,13 +84,7 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Updated user information",
-                    required = true
-            )
-            @RequestBody @Valid UpdateUserDTO dto
-    ) {
+    public ResponseEntity<UserWithUrlsDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO dto) {
         return ResponseEntity.ok().body(service.updateUser(id, dto));
     }
 

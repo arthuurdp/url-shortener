@@ -1,6 +1,5 @@
 package com.arthuurdp.shortener.domain.entities.url;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-
+// when an original url is sent, it returns the short key
 public record CreateShortUrlDTOResponse(String shortKey) {
 }

@@ -53,8 +53,8 @@ public class AuthController {
     })
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
-        UserResponseDTO response = service.register(dto);
+    public ResponseEntity<UserWithUrlsDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
+        UserWithUrlsDTO response = service.register(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

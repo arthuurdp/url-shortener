@@ -41,7 +41,7 @@ public class AuthService {
         return new LoginResponseDTO(token);
     }
 
-    public UserResponseDTO register(RegisterUserDTO dto) {
+    public UserWithUrlsDTO register(RegisterUserDTO dto) {
         if (repo.findByEmail(dto.email()) != null) {
             throw new ResourceNotFoundException("Email already in use");
         }
@@ -55,7 +55,7 @@ public class AuthService {
         );
 
         repo.save(user);
-        return entityMapper.toUserDTO(user);
+        return entityMapper.toUserWithUrlsDTO(user);
     }
 
     public User getCurrentUser() { Authentication auth = SecurityContextHolder.getContext().getAuthentication(); return (User) auth.getPrincipal(); }

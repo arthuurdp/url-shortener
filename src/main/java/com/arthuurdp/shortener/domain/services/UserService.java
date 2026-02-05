@@ -3,11 +3,13 @@ package com.arthuurdp.shortener.domain.services;
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
-import com.arthuurdp.shortener.domain.entities.user.UserResponseDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
+import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,26 +29,31 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponseDTO findById(Long id) {
+    public UserWithUrlsDTO findById(Long id) {
         User dto = repo.findByIdWithShortUrls(id).orElseThrow(() -> new ResourceNotFoundException("User not found " + id));
-        return entityMapper.toUserDTO(dto);
+        return entityMapper.toUserWithUrlsDTO(dto);
     }
 
-    public List<UserResponseDTO> findAll() {
-        return repo.findAllWithShortUrls().stream().map(entityMapper::toUserDTO).toList();
+    public List<UserWithoutUrlsDTO> findAllWithoutUrls() {
+        return repo.findAll().stream().map(entityMapper::toUserWithoutUrlsDTO).toList();
     }
 
+    public List<UserWithUrlsDTO> findAllWithUrls() {
+        return repo.findAllWithShortUrls().stream().map(entityMapper::toUserWithUrlsDTO).toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     @Transactional
-    public UserResponseDTO updateUser(Long id, UpdateUserDTO dto) {
-        User targetUser = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("No user was found with id " + id));
-        User currentUser = authService.getCurrentUser();
+    public UserWithUrlsDTO updateUser(Long id, UpdateUserDTO dto) {
 
+        User targetUser = repo.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No user was found with id " + id)
+                );
+
+        User currentUser = authService.getCurrentUser();
         boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
         boolean isSelf  = currentUser.getId().equals(targetUser.getId());
-
-        if (!isAdmin && !isSelf) {
-            throw new AccessDeniedException("You are not allowed to update this user");
-        }
 
         if (dto.firstName() != null) {
             targetUser.setFirstName(dto.firstName());
@@ -64,11 +71,14 @@ public class UserService {
             if (!isAdmin) {
                 throw new AccessDeniedException("Only admin can change user roles");
             }
+            if (isSelf) {
+                throw new AccessDeniedException("You cannot change your own role");
+            }
             targetUser.setRole(dto.role());
         }
 
         User saved = repo.save(targetUser);
-        return entityMapper.toUserDTO(saved);
+        return entityMapper.toUserWithUrlsDTO(saved);
     }
 
 

@@ -32,22 +32,22 @@ class UserServiceTest {
     private UserService userService;
 
     private User user;
-    private UserResponseDTO userResponseDTO;
+    private UserWithUrlsDTO userWithUrlsDTO;
 
     @BeforeEach
     void setUp() {
         user = new User(1L, "User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
-        userResponseDTO = new UserResponseDTO(1L, "User", "teste", "user@teste.com", Role.ROLE_USER, null);
+        userWithUrlsDTO = new UserWithUrlsDTO(1L, "User", "teste", "user@teste.com", Role.ROLE_USER, null);
     }
 
     @Test
     void testFindById_Success() {
         // Arrange
         when(userRepository.findByIdWithShortUrls(1L)).thenReturn(Optional.of(user));
-        when(entityMapper.toUserDTO(user)).thenReturn(userResponseDTO);
+        when(entityMapper.toUserWithUrlsDTO(user)).thenReturn(userWithUrlsDTO);
 
         // Act
-        UserResponseDTO result = userService.findById(1L);
+        UserWithUrlsDTO result = userService.findById(1L);
 
         // Assert
         assertNotNull(result);
@@ -65,13 +65,13 @@ class UserServiceTest {
     }
 
     @Test
-    void testFindAll_Success() {
+    void testFindAll_WithUrls_Success() {
         // Arrange
         when(userRepository.findAllWithShortUrls()).thenReturn(Arrays.asList(user));
-        when(entityMapper.toUserDTO(any())).thenReturn(userResponseDTO);
+        when(entityMapper.toUserWithUrlsDTO(any())).thenReturn(userWithUrlsDTO);
 
         // Act
-        List<UserResponseDTO> result = userService.findAll();
+        List<UserWithUrlsDTO> result = userService.findAllWithUrls();
 
         // Assert
         assertEquals(1, result.size());
@@ -84,10 +84,10 @@ class UserServiceTest {
         UpdateUserDTO updateDTO = new UpdateUserDTO("napoleão", "bonaparte", "napoleao@teste.com", null, Role.ROLE_ADMIN);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(entityMapper.toUserDTO(any())).thenReturn(userResponseDTO);
+        when(entityMapper.toUserWithUrlsDTO(any())).thenReturn(userWithUrlsDTO);
 
         // Act
-        UserResponseDTO result = userService.updateUser(1L, updateDTO);
+        UserWithUrlsDTO result = userService.updateUser(1L, updateDTO);
 
         // Assert
         assertNotNull(result);

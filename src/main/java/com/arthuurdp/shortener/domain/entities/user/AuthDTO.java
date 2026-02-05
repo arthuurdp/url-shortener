@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+// login
 public record AuthDTO(
         @NotBlank(message = "E-mail is required")
         @Email
