@@ -10,6 +10,7 @@ import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -47,16 +48,29 @@ public class ShortUrlService {
                 .toList();
     }
 
-
+    @Transactional
     public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
-        ShortUrl url = new ShortUrl(
-                keyGenerator.generate(),
-                dto.originalUrl(),
-                authService.getCurrentUser()
-        );
+        User user = authService.getCurrentUser();
+        final int MAX_ATTEMPTS = 5;
 
-        repo.save(url);
-        return entityMapper.toCreateShortUrlDTOResponse(url);
+        for (int attempts = 1; attempts <= MAX_ATTEMPTS; attempts++) {
+            String key = keyGenerator.generate();
+
+            try {
+                ShortUrl url = new ShortUrl(
+                        key,
+                        dto.originalUrl(),
+                        user
+                );
+
+                repo.save(url);
+                return entityMapper.toCreateShortUrlDTOResponse(url);
+            } catch (DataIntegrityViolationException e) {
+            }
+        }
+        throw new IllegalStateException(
+                "Could not generate a unique short url. Please try again later."
+        );
     }
 
     @Transactional
@@ -72,7 +86,7 @@ public class ShortUrlService {
         ShortUrl url = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("URL not found"));
 
         if (!url.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("You can only delete your own urls");
+            throw new ResourceNotFoundException("URL not found");
         }
 
         repo.deleteById(id);

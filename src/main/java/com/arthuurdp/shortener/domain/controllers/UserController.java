@@ -5,6 +5,7 @@ import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,33 +29,25 @@ public class UserController {
 
     @Operation(
             summary = "Get all users without urls",
-            description = "Returns a list of all registered users without their urls."
+            description = "Returns a list of all registered users."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @GetMapping
+    @Parameter(
+            name = "include",
+            description = "Optional parameter. Use 'urls' to include user urls.",
+            example = "/include=urls"
+    )
+    @GetMapping(params = "!include")
     public ResponseEntity<List<UserWithoutUrlsDTO>> findAllWithoutUrls() {
         return ResponseEntity.ok().body(service.findAllWithoutUrls());
     }
-
-    @Operation(
-            summary = "Get all users with urls",
-            description = "Returns a list of all registered users with their urls."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    @GetMapping
-    public ResponseEntity<List<?>> findAllWithUrls(@RequestParam(required = false) String include) {
-        if ("urls".equals(include)) {
-            return ResponseEntity.ok(service.findAllWithUrls());
-        }
-        return ResponseEntity.ok().body(service.findAllWithoutUrls());
+    @GetMapping(params = "include=urls")
+    public ResponseEntity<List<UserWithUrlsDTO>> findAllWithUrls() {
+        return ResponseEntity.ok().body(service.findAllWithUrls());
     }
 
     @Operation(

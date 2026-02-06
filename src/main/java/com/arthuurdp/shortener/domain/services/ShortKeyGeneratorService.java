@@ -7,8 +7,7 @@ import java.security.SecureRandom;
 @Service
 public class ShortKeyGeneratorService {
 
-    private static final String BASE62 =
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final int KEY_LENGTH = 7;
 

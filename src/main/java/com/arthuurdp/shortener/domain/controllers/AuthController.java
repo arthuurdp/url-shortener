@@ -49,12 +49,11 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid registration data or email already exists"),
-            @ApiResponse(responseCode = "403", description = "User doesn't have access")
     })
 
     @PostMapping("/register")
-    public ResponseEntity<UserWithUrlsDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
-        UserWithUrlsDTO response = service.register(dto);
+    public ResponseEntity<UserWithoutUrlsDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
+        UserWithoutUrlsDTO response = service.register(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

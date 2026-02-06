@@ -42,8 +42,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, "/short-urls/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-
                         .requestMatchers(HttpMethod.GET, "/users/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/**").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated()
                 )

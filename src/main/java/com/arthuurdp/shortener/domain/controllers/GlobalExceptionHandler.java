@@ -1,5 +1,6 @@
 package com.arthuurdp.shortener.domain.controllers;
 
+import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import com.arthuurdp.shortener.domain.services.exceptions.StandardError;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,15 +19,26 @@ import java.time.Instant;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // local exception
+    // when nothing is found in the database
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<StandardError> handleResourceNotFound(ResourceNotFoundException e) {
+    public ResponseEntity<StandardError> handleResourceNotFoundException(ResourceNotFoundException e) {
        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardError(
                Instant.now(),
                HttpStatus.NOT_FOUND.value(),
                "Not Found",
                e.getMessage()
        ));
+   }
+
+   // doesn't have access
+   @ExceptionHandler(AccessDeniedException.class)
+   public ResponseEntity<StandardError> handleAccessDeniedException(AccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new StandardError(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Access Denied",
+                e.getMessage()
+        ));
    }
 
    // if the short key was already generated

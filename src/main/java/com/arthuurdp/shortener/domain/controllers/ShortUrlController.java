@@ -69,13 +69,7 @@ public class ShortUrlController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<CreateShortUrlDTOResponse> createShortUrl(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Short URL creation request",
-                    required = true
-            )
-            @Valid @RequestBody CreateShortUrlDTO dto) {
-
+    public ResponseEntity<CreateShortUrlDTOResponse> createShortUrl(@Valid @RequestBody CreateShortUrlDTO dto) {
         CreateShortUrlDTOResponse created = service.createShortUrl(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentContextPath()

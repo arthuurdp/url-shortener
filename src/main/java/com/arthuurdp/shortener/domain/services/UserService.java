@@ -30,7 +30,7 @@ public class UserService {
     }
 
     public UserWithUrlsDTO findById(Long id) {
-        User dto = repo.findByIdWithShortUrls(id).orElseThrow(() -> new ResourceNotFoundException("User not found " + id));
+        User dto = repo.findByIdWithShortUrls(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return entityMapper.toUserWithUrlsDTO(dto);
     }
 
@@ -42,18 +42,10 @@ public class UserService {
         return repo.findAllWithShortUrls().stream().map(entityMapper::toUserWithUrlsDTO).toList();
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public UserWithUrlsDTO updateUser(Long id, UpdateUserDTO dto) {
-
-        User targetUser = repo.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("No user was found with id " + id)
-                );
-
-        User currentUser = authService.getCurrentUser();
-        boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
-        boolean isSelf  = currentUser.getId().equals(targetUser.getId());
+        User targetUser = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (dto.firstName() != null) {
             targetUser.setFirstName(dto.firstName());
@@ -68,21 +60,14 @@ public class UserService {
             targetUser.setPassword(passwordEncoder.encode(dto.password()));
         }
         if (dto.role() != null) {
-            if (!isAdmin) {
-                throw new AccessDeniedException("Only admin can change user roles");
-            }
-            if (isSelf) {
-                throw new AccessDeniedException("You cannot change your own role");
-            }
             targetUser.setRole(dto.role());
         }
 
-        User saved = repo.save(targetUser);
-        return entityMapper.toUserWithUrlsDTO(saved);
+        return entityMapper.toUserWithUrlsDTO(repo.save(targetUser));
     }
 
-
     public void deleteUser(Long id) {
-        repo.deleteById(id);
+        User user = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        repo.delete(user);
     }
 }

@@ -73,14 +73,14 @@ class AuthServiceTest {
     @Test
     void testRegister_Success() {
         // Arrange
-        UserWithUrlsDTO response = new UserWithUrlsDTO(1L, "User", "Test", "user@teste.com", Role.ROLE_USER, null);
+        UserWithoutUrlsDTO response = new UserWithoutUrlsDTO(1L, "User", "Test", "user@teste.com", Role.ROLE_USER);
         when(userRepository.findByEmail(registerDTO.email())).thenReturn(null);
         when(passwordEncoder.encode(registerDTO.password())).thenReturn("teste123");
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(entityMapper.toUserWithUrlsDTO(any(User.class))).thenReturn(response);
+        when(entityMapper.toUserWithoutUrlsDTO(any(User.class))).thenReturn(response);
 
         // Act
-        UserWithUrlsDTO result = authService.register(registerDTO);
+        UserWithoutUrlsDTO result = authService.register(registerDTO);
 
         // Assert
         assertNotNull(result);
