@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,13 +42,12 @@ public class UserController {
             description = "Optional parameter. Use 'urls' to include user urls.",
             example = "/include=urls"
     )
-    @GetMapping(params = "!include")
-    public ResponseEntity<List<UserWithoutUrlsDTO>> findAllWithoutUrls() {
-        return ResponseEntity.ok().body(service.findAllWithoutUrls());
-    }
-    @GetMapping(params = "include=urls")
-    public ResponseEntity<List<UserWithUrlsDTO>> findAllWithUrls() {
-        return ResponseEntity.ok().body(service.findAllWithUrls());
+    @GetMapping
+    public ResponseEntity<Page<UserWithoutUrlsDTO>> findAllWithoutUrls(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(service.findAllWithoutUrls(page, size));
     }
 
     @Operation(

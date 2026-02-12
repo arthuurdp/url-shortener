@@ -10,9 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,88 +28,121 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    private static final Long USER_ID = 1L;
+    private static final String FIRST_NAME = "User";
+    private static final String LAST_NAME = "Test";
+    private static final String EMAIL = "user@test.com";
+
     private User user;
     private UserWithUrlsDTO userWithUrlsDTO;
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
-        userWithUrlsDTO = new UserWithUrlsDTO(1L, "User", "teste", "user@teste.com", Role.ROLE_USER, null);
+        user = new User(
+                USER_ID,
+                FIRST_NAME,
+                LAST_NAME,
+                EMAIL,
+                "password",
+                Role.ROLE_USER
+        );
+
+        userWithUrlsDTO = new UserWithUrlsDTO(
+                USER_ID,
+                FIRST_NAME,
+                LAST_NAME,
+                EMAIL,
+                Role.ROLE_USER,
+                null
+        );
     }
 
     @Test
     void testFindById_Success() {
         // Arrange
-        when(userRepository.findByIdWithShortUrls(1L)).thenReturn(Optional.of(user));
-        when(entityMapper.toUserWithUrlsDTO(user)).thenReturn(userWithUrlsDTO);
+        when(userRepository.findByIdWithShortUrls(USER_ID))
+                .thenReturn(Optional.of(user));
+        when(entityMapper.toUserWithUrlsDTO(user))
+                .thenReturn(userWithUrlsDTO);
 
         // Act
-        UserWithUrlsDTO result = userService.findById(1L);
+        UserWithUrlsDTO result = userService.findById(USER_ID);
 
         // Assert
         assertNotNull(result);
-        assertEquals("user@teste.com", result.email());
-        verify(userRepository, times(1)).findByIdWithShortUrls(1L);
+        assertEquals(EMAIL, result.email());
+
+        verify(userRepository).findByIdWithShortUrls(USER_ID);
+        verify(entityMapper).toUserWithUrlsDTO(user);
     }
 
     @Test
     void testFindById_NotFound() {
         // Arrange
-        when(userRepository.findByIdWithShortUrls(1L)).thenReturn(Optional.empty());
+        when(userRepository.findByIdWithShortUrls(USER_ID))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> userService.findById(1L));
-    }
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.findById(USER_ID));
 
-    @Test
-    void testFindAll_WithUrls_Success() {
-        // Arrange
-        when(userRepository.findAllWithShortUrls()).thenReturn(Arrays.asList(user));
-        when(entityMapper.toUserWithUrlsDTO(any())).thenReturn(userWithUrlsDTO);
-
-        // Act
-        List<UserWithUrlsDTO> result = userService.findAllWithUrls();
-
-        // Assert
-        assertEquals(1, result.size());
-        verify(userRepository, times(1)).findAllWithShortUrls();
+        verify(userRepository).findByIdWithShortUrls(USER_ID);
     }
 
     @Test
     void testUpdateUser_Success() {
         // Arrange
-        UpdateUserDTO updateDTO = new UpdateUserDTO("napoleão", "bonaparte", "napoleao@teste.com", null, Role.ROLE_ADMIN);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
-        when(entityMapper.toUserWithUrlsDTO(any())).thenReturn(userWithUrlsDTO);
+        UpdateUserDTO updateDTO = new UpdateUserDTO(
+                "Napoleão",
+                "Bonaparte",
+                "napoleao@test.com",
+                null,
+                Role.ROLE_ADMIN
+        );
+
+        when(userRepository.findById(USER_ID))
+                .thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        when(entityMapper.toUserWithUrlsDTO(user))
+                .thenReturn(userWithUrlsDTO);
 
         // Act
-        UserWithUrlsDTO result = userService.updateUser(1L, updateDTO);
+        UserWithUrlsDTO result = userService.updateUser(USER_ID, updateDTO);
 
         // Assert
         assertNotNull(result);
-        verify(userRepository, times(1)).save(any(User.class));
+
+        verify(userRepository).findById(USER_ID);
+        verify(userRepository).save(any(User.class));
+        verify(entityMapper).toUserWithUrlsDTO(user);
     }
 
     @Test
     void testDeleteUser_Success() {
-        User user = new User();
-        user.setId(1L);
+        // Arrange
+        when(userRepository.findById(USER_ID))
+                .thenReturn(Optional.of(user));
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        // Act
+        userService.deleteUser(USER_ID);
 
-        userService.deleteUser(1L);
-
+        // Assert
+        verify(userRepository).findById(USER_ID);
         verify(userRepository).delete(user);
     }
 
-
     @Test
     void testDeleteUser_NotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        // Arrange
+        when(userRepository.findById(USER_ID))
+                .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(1L));
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> userService.deleteUser(USER_ID));
 
+        verify(userRepository).findById(USER_ID);
         verify(userRepository, never()).delete(any());
     }
 }

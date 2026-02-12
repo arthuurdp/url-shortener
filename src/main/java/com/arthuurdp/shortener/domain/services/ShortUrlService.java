@@ -11,6 +11,9 @@ import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -32,20 +35,19 @@ public class ShortUrlService {
         this.authService = authService;
     }
 
-    public List<ShortUrlDTO> getAll() {
+    public Page<ShortUrlDTO> getAll(int page, int size) {
         User user = authService.getCurrentUser();
 
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ShortUrl> urlPage;
+
         if (user.getRole() == Role.ROLE_USER) {
-            return repo.findAllByUserId(user.getId())
-                    .stream()
-                    .map(entityMapper::toShortUrlDTO)
-                    .toList();
+            urlPage = repo.findAllByUserId(user.getId(), pageable);
+        } else {
+            urlPage = repo.findAll(pageable);
         }
 
-        return repo.findAllWithUserId()
-                .stream()
-                .map(entityMapper::toShortUrlDTO)
-                .toList();
+        return urlPage.map(entityMapper::toShortUrlDTO);
     }
 
     @Transactional
@@ -69,7 +71,7 @@ public class ShortUrlService {
             }
         }
         throw new IllegalStateException(
-                "Could not generate a unique short url. Please try again later."
+                "Could not generate a short url. Please try again later."
         );
     }
 

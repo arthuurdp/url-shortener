@@ -12,8 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,95 +39,134 @@ class ShortUrlServiceTest {
     @InjectMocks
     private ShortUrlService shortUrlService;
 
+    private static final Long USER_ID = 1L;
+    private static final Long OTHER_USER_ID = 2L;
+    private static final Long URL_ID = 1L;
+    private static final String SHORT_KEY = "abc123";
+    private static final String ORIGINAL_URL = "https://example.com";
+
     private User user;
     private ShortUrl shortUrl;
     private CreateShortUrlDTO createDTO;
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
-        shortUrl = new ShortUrl("abc123", "https://example.com", user);
-        createDTO = new CreateShortUrlDTO("https://example.com");
+        user = new User(USER_ID, "User", "Test",
+                "user@test.com", "password", Role.ROLE_USER);
+
+        shortUrl = new ShortUrl(SHORT_KEY, ORIGINAL_URL, user);
+        createDTO = new CreateShortUrlDTO(ORIGINAL_URL);
     }
 
     @Test
     void testGetAll_UserRole() {
         // Arrange
-        ShortUrlDTO dto = new ShortUrlDTO(1L, "abc123", "https://example.com", null, null, 0, "John");
+        ShortUrlDTO dto =
+                new ShortUrlDTO(URL_ID, SHORT_KEY, ORIGINAL_URL,
+                        null, null, 0, "User");
+
         when(authService.getCurrentUser()).thenReturn(user);
-        when(shortUrlRepository.findAllByUserId(1L)).thenReturn(Arrays.asList(shortUrl));
-        when(entityMapper.toShortUrlDTO(any())).thenReturn(dto);
+        when(shortUrlRepository.findAllByUserId(eq(USER_ID), any()))
+                .thenReturn(new PageImpl<>(List.of(shortUrl)));
+        when(entityMapper.toShortUrlDTO(shortUrl)).thenReturn(dto);
 
         // Act
-        List<ShortUrlDTO> result = shortUrlService.getAll();
+        Page<ShortUrlDTO> result = shortUrlService.getAll(0, 10);
 
         // Assert
-        assertEquals(1, result.size());
-        verify(shortUrlRepository, times(1)).findAllByUserId(1L);
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+
+        verify(shortUrlRepository).findAllByUserId(eq(USER_ID), any());
+        verify(entityMapper).toShortUrlDTO(shortUrl);
     }
 
     @Test
     void testCreateShortUrl_Success() {
         // Arrange
-        CreateShortUrlDTOResponse response = new CreateShortUrlDTOResponse("abc123");
+        CreateShortUrlDTOResponse response = new CreateShortUrlDTOResponse(SHORT_KEY);
+
         when(authService.getCurrentUser()).thenReturn(user);
-        when(keyGenerator.generate()).thenReturn("abc123");
-        when(shortUrlRepository.save(any(ShortUrl.class))).thenReturn(shortUrl);
-        when(entityMapper.toCreateShortUrlDTOResponse(any())).thenReturn(response);
+        when(keyGenerator.generate()).thenReturn(SHORT_KEY);
+        when(shortUrlRepository.save(any(ShortUrl.class)))
+                .thenReturn(shortUrl);
+        when(entityMapper.toCreateShortUrlDTOResponse(any(ShortUrl.class)))
+                .thenReturn(response);
 
         // Act
         CreateShortUrlDTOResponse result = shortUrlService.createShortUrl(createDTO);
 
         // Assert
         assertNotNull(result);
-        assertEquals("abc123", result.shortKey());
-        verify(shortUrlRepository, times(1)).save(any(ShortUrl.class));
+        assertEquals(SHORT_KEY, result.shortKey());
+
+        verify(keyGenerator).generate();
+        verify(shortUrlRepository).save(any(ShortUrl.class));
     }
 
     @Test
     void testGetOriginalUrl_Success() {
         // Arrange
-        when(shortUrlRepository.findByShortKey("abc123")).thenReturn(Optional.of(shortUrl));
+        when(shortUrlRepository.findByShortKey(SHORT_KEY))
+                .thenReturn(Optional.of(shortUrl));
 
         // Act
-        String result = shortUrlService.getOriginalUrl("abc123");
+        String result = shortUrlService.getOriginalUrl(SHORT_KEY);
 
         // Assert
-        assertEquals("https://example.com", result);
+        assertEquals(ORIGINAL_URL, result);
         assertEquals(1, shortUrl.getClicks());
+
+        verify(shortUrlRepository).findByShortKey(SHORT_KEY);
     }
 
     @Test
     void testGetOriginalUrl_NotFound() {
         // Arrange
-        when(shortUrlRepository.findByShortKey("invalid")).thenReturn(Optional.empty());
+        when(shortUrlRepository.findByShortKey("invalid"))
+                .thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> shortUrlService.getOriginalUrl("invalid"));
+        assertThrows(ResourceNotFoundException.class,
+                () -> shortUrlService.getOriginalUrl("invalid"));
+
+        verify(shortUrlRepository).findByShortKey("invalid");
     }
 
     @Test
     void testDeleteById_Success() {
         // Arrange
         when(authService.getCurrentUser()).thenReturn(user);
-        when(shortUrlRepository.findById(1L)).thenReturn(Optional.of(shortUrl));
+        when(shortUrlRepository.findById(URL_ID))
+                .thenReturn(Optional.of(shortUrl));
 
         // Act
-        shortUrlService.deleteById(1L);
+        shortUrlService.deleteById(URL_ID);
 
         // Assert
-        verify(shortUrlRepository, times(1)).deleteById(1L);
+        verify(shortUrlRepository).deleteById(URL_ID);
     }
 
     @Test
-    void testDeleteById_AccessDenied() {
+    void testDeleteById_ResourceNotFound() {
         // Arrange
-        User otherUser = new User(2L, "aaaaa", "bc", "inter@teste.com", "10101010", Role.ROLE_USER);
+        User otherUser = new User(
+                OTHER_USER_ID,
+                "Other",
+                "User",
+                "other@test.com",
+                "password",
+                Role.ROLE_USER
+        );
+
         when(authService.getCurrentUser()).thenReturn(otherUser);
-        when(shortUrlRepository.findById(1L)).thenReturn(Optional.of(shortUrl));
+        when(shortUrlRepository.findById(URL_ID))
+                .thenReturn(Optional.of(shortUrl));
 
         // Act & Assert
-        assertThrows(AccessDeniedException.class, () -> shortUrlService.deleteById(1L));
+        assertThrows(ResourceNotFoundException.class,
+                () -> shortUrlService.deleteById(URL_ID));
+
         verify(shortUrlRepository, never()).deleteById(any());
     }
 }

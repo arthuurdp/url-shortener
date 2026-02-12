@@ -1,31 +1,28 @@
 package com.arthuurdp.shortener.domain.services;
 
-import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
-import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserService {
     private final UserRepository repo;
     private final EntityMapperService entityMapper;
-    private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repo, EntityMapperService entityMapper, AuthService authService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repo, EntityMapperService entityMapper, PasswordEncoder passwordEncoder) {
         this.repo = repo;
         this.entityMapper = entityMapper;
-        this.authService = authService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -34,12 +31,10 @@ public class UserService {
         return entityMapper.toUserWithUrlsDTO(dto);
     }
 
-    public List<UserWithoutUrlsDTO> findAllWithoutUrls() {
-        return repo.findAll().stream().map(entityMapper::toUserWithoutUrlsDTO).toList();
-    }
-
-    public List<UserWithUrlsDTO> findAllWithUrls() {
-        return repo.findAllWithShortUrls().stream().map(entityMapper::toUserWithUrlsDTO).toList();
+    public Page<UserWithoutUrlsDTO> findAllWithoutUrls(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> userPage = repo.findAll(pageable);
+        return userPage.map(entityMapper::toUserWithoutUrlsDTO);
     }
 
     @Transactional
