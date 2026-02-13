@@ -7,10 +7,8 @@ import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
-import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Service
 public class ShortUrlService {
@@ -53,26 +50,15 @@ public class ShortUrlService {
     @Transactional
     public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
         User user = authService.getCurrentUser();
-        final int MAX_ATTEMPTS = 5;
+        ShortUrl url = new ShortUrl(dto.originalUrl(), user);
 
-        for (int attempts = 1; attempts <= MAX_ATTEMPTS; attempts++) {
-            String key = keyGenerator.generate();
+        ShortUrl saved = repo.saveAndFlush(url);
+        String key = keyGenerator.encode(saved.getId());
 
-            try {
-                ShortUrl url = new ShortUrl(
-                        key,
-                        dto.originalUrl(),
-                        user
-                );
+        saved.setShortKey(key);
+        repo.save(saved);
 
-                repo.save(url);
-                return entityMapper.toCreateShortUrlDTOResponse(url);
-            } catch (DataIntegrityViolationException e) {
-            }
-        }
-        throw new IllegalStateException(
-                "Could not generate a short url. Please try again later."
-        );
+        return entityMapper.toCreateShortUrlDTOResponse(saved);
     }
 
     @Transactional

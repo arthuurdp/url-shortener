@@ -59,16 +59,13 @@ class UserServiceTest {
 
     @Test
     void testFindById_Success() {
-        // Arrange
         when(userRepository.findByIdWithShortUrls(USER_ID))
                 .thenReturn(Optional.of(user));
         when(entityMapper.toUserWithUrlsDTO(user))
                 .thenReturn(userWithUrlsDTO);
 
-        // Act
         UserWithUrlsDTO result = userService.findById(USER_ID);
 
-        // Assert
         assertNotNull(result);
         assertEquals(EMAIL, result.email());
 
@@ -78,11 +75,9 @@ class UserServiceTest {
 
     @Test
     void testFindById_NotFound() {
-        // Arrange
         when(userRepository.findByIdWithShortUrls(USER_ID))
                 .thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class,
                 () -> userService.findById(USER_ID));
 
@@ -91,7 +86,6 @@ class UserServiceTest {
 
     @Test
     void testUpdateUser_Success() {
-        // Arrange
         UpdateUserDTO updateDTO = new UpdateUserDTO(
                 "Napoleão",
                 "Bonaparte",
@@ -107,10 +101,8 @@ class UserServiceTest {
         when(entityMapper.toUserWithUrlsDTO(user))
                 .thenReturn(userWithUrlsDTO);
 
-        // Act
         UserWithUrlsDTO result = userService.updateUser(USER_ID, updateDTO);
 
-        // Assert
         assertNotNull(result);
 
         verify(userRepository).findById(USER_ID);
@@ -120,25 +112,20 @@ class UserServiceTest {
 
     @Test
     void testDeleteUser_Success() {
-        // Arrange
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.of(user));
 
-        // Act
         userService.deleteUser(USER_ID);
 
-        // Assert
         verify(userRepository).findById(USER_ID);
         verify(userRepository).delete(user);
     }
 
     @Test
     void testDeleteUser_NotFound() {
-        // Arrange
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class,
                 () -> userService.deleteUser(USER_ID));
 

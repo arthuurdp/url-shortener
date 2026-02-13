@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EntityMapperService {
-    // Learning DTO concepts: transforming entities into DTOs to expose only the required attributes, avoiding returning all database fields in API Endpoints.
-
     public CreateShortUrlDTOResponse toCreateShortUrlDTOResponse(ShortUrl shortUrl) {
         return new CreateShortUrlDTOResponse(
                 shortUrl.getShortKey()

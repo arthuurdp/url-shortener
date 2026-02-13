@@ -56,15 +56,12 @@ class AuthServiceTest {
 
     @Test
     void testLogin_Success() {
-        // Arrange
         when(authManager.authenticate(any())).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(user);
         when(tokenService.generateToken(user)).thenReturn("token-123");
 
-        // Act
         LoginResponseDTO result = authService.login(authDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals("token-123", result.token());
         verify(authManager, times(1)).authenticate(any());
@@ -72,17 +69,14 @@ class AuthServiceTest {
 
     @Test
     void testRegister_Success() {
-        // Arrange
         UserWithoutUrlsDTO response = new UserWithoutUrlsDTO(1L, "User", "Test", "user@teste.com", Role.ROLE_USER);
         when(userRepository.findByEmail(registerDTO.email())).thenReturn(null);
         when(passwordEncoder.encode(registerDTO.password())).thenReturn("teste123");
         when(userRepository.save(any(User.class))).thenReturn(user);
         when(entityMapper.toUserWithoutUrlsDTO(any(User.class))).thenReturn(response);
 
-        // Act
         UserWithoutUrlsDTO result = authService.register(registerDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals("user@teste.com", result.email());
         verify(userRepository, times(1)).save(any(User.class));
@@ -90,10 +84,8 @@ class AuthServiceTest {
 
     @Test
     void testRegister_EmailAlreadyExists() {
-        // Arrange
         when(userRepository.findByEmail(registerDTO.email())).thenReturn(user);
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> authService.register(registerDTO));
         verify(userRepository, never()).save(any());
     }

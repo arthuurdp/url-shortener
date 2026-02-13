@@ -2,20 +2,22 @@ package com.arthuurdp.shortener.domain.services;
 
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-
 @Service
 public class ShortKeyGeneratorService {
 
-    private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final SecureRandom RANDOM = new SecureRandom();
-    private static final int KEY_LENGTH = 7;
+    private static final String BASE62 =
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    public String generate() {
-        StringBuilder key = new StringBuilder(KEY_LENGTH);
-        for (int i = 0; i < KEY_LENGTH; i++) {
-            key.append(BASE62.charAt(RANDOM.nextInt(BASE62.length())));
+    public String encode(long value) {
+        if (value == 0) return "0";
+
+        StringBuilder sb = new StringBuilder();
+
+        while (value > 0) {
+            sb.append(BASE62.charAt((int) (value % 62)));
+            value /= 62;
         }
-        return key.toString();
+
+        return sb.reverse().toString();
     }
 }

@@ -1,6 +1,6 @@
 CREATE TABLE short_urls (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    short_key VARCHAR(10) NOT NULL UNIQUE,
+    short_key VARCHAR(10) NULL UNIQUE,
     original_url TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_clicked_at TIMESTAMP NULL,
