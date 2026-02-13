@@ -101,7 +101,7 @@ class UserServiceTest {
         when(entityMapper.toUserWithUrlsDTO(user))
                 .thenReturn(userWithUrlsDTO);
 
-        UserWithUrlsDTO result = userService.updateUser(USER_ID, updateDTO);
+        UserWithoutUrlsDTO result = userService.updateUser(USER_ID, updateDTO);
 
         assertNotNull(result);
 

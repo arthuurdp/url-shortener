@@ -5,8 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ShortKeyGeneratorService {
 
-    private static final String BASE62 =
-            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     public String encode(long value) {
         if (value == 0) return "0";

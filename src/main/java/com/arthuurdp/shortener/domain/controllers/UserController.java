@@ -5,7 +5,6 @@ import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,8 +13,6 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @Tag(name = "Users", description = "User management operations")
@@ -37,11 +34,6 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @Parameter(
-            name = "include",
-            description = "Optional parameter. Use 'urls' to include user urls.",
-            example = "/include=urls"
-    )
     @GetMapping
     public ResponseEntity<Page<UserWithoutUrlsDTO>> findAllWithoutUrls(
             @RequestParam(defaultValue = "0") int page,
@@ -72,12 +64,11 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
-    public ResponseEntity<UserWithUrlsDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO dto) {
+    public ResponseEntity<UserWithoutUrlsDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO dto) {
         return ResponseEntity.ok().body(service.updateUser(id, dto));
     }
 

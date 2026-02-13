@@ -41,7 +41,18 @@ public class GlobalExceptionHandler {
         ));
    }
 
-   // if the short key was already generated
+   // handling spring exception
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<StandardError> handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new StandardError(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                e.getMessage()
+        ));
+    }
+
+    // if the short key was already generated
    @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<StandardError> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new StandardError(
@@ -77,12 +88,11 @@ public class GlobalExceptionHandler {
    // invalid url sent
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<StandardError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        String message = e.getBindingResult().getFieldError().getDefaultMessage();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                message
+                e.getBindingResult().getFieldError().getDefaultMessage()
         ));
     }
 
