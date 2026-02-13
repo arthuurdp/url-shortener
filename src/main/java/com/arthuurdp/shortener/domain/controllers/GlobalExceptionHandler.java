@@ -12,7 +12,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 
@@ -85,36 +84,41 @@ public class GlobalExceptionHandler {
         ));
    }
 
-   // invalid url sent
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<StandardError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    // business logic errors or validation errors
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<StandardError> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                e.getBindingResult().getFieldError().getDefaultMessage()
+                e.getMessage()
         ));
     }
 
-    // the endpoint doesn't exist
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<StandardError> handleNoResourceFoundException(NoResourceFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardError(
+    // handles validation errors from @Valid
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<StandardError> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .reduce((a, b) -> a + "; " + b)
+                .orElse("Validation failed");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
                 Instant.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                "Invalid path: the endpoint doesn't exist"
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Error",
+                message
         ));
     }
 
-    // invalid data type
+    // invalid data type in path or query params
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<StandardError> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new StandardError(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
-                "Not Found",
-                "Invalid data type"
+                "Bad Request",
+                "Invalid data type for parameter: " + e.getName()
         ));
     }
 

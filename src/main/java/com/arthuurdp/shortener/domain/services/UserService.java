@@ -46,11 +46,7 @@ public class UserService {
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public UserWithoutUrlsDTO updateUser(Long id, UpdateUserDTO dto) {
-        User currentUser = authService.getCurrentUser();
         User targetUser = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        boolean isUpdatingSelf = currentUser.getId().equals(targetUser.getId());
-        boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
 
         if (dto.firstName() != null && !dto.firstName().isBlank()) {
             targetUser.setFirstName(dto.firstName());
@@ -74,6 +70,10 @@ public class UserService {
         }
 
         if (dto.role() != null) {
+            User currentUser = authService.getCurrentUser();
+            boolean isAdmin = currentUser.getRole() == Role.ROLE_ADMIN;
+            boolean isUpdatingSelf = currentUser.getId().equals(targetUser.getId());
+
             if (!isAdmin) {
                 throw new AccessDeniedException("Only administrators can change user roles");
             }
@@ -83,8 +83,7 @@ public class UserService {
             targetUser.setRole(dto.role());
         }
 
-        User savedUser = repo.save(targetUser);
-        return entityMapper.toUserWithoutUrlsDTO(savedUser);
+        return entityMapper.toUserWithoutUrlsDTO(targetUser);
     }
 
     @Transactional

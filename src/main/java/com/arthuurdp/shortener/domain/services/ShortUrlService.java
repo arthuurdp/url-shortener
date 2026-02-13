@@ -52,13 +52,11 @@ public class ShortUrlService {
         User user = authService.getCurrentUser();
         ShortUrl url = new ShortUrl(dto.originalUrl(), user);
 
-        ShortUrl saved = repo.saveAndFlush(url);
-        String key = keyGenerator.encode(saved.getId());
+        url = repo.save(url);
+        String key = keyGenerator.encode(url.getId());
+        url.setShortKey(key);
 
-        saved.setShortKey(key);
-        repo.save(saved);
-
-        return entityMapper.toCreateShortUrlDTOResponse(saved);
+        return entityMapper.toCreateShortUrlDTOResponse(url);
     }
 
     @Transactional

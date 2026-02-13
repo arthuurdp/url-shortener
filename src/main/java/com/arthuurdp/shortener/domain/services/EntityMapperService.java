@@ -17,6 +17,7 @@ public class EntityMapperService {
     }
 
     public ShortUrlDTO toShortUrlDTO(ShortUrl shortUrl) {
+        String name = shortUrl.getUser() != null ? shortUrl.getUser().getFirstName() : "Anonymous";
         return new ShortUrlDTO(
                 shortUrl.getId(),
                 shortUrl.getShortKey(),
@@ -24,7 +25,7 @@ public class EntityMapperService {
                 shortUrl.getCreatedAt(),
                 shortUrl.getLastClickedAt(),
                 shortUrl.getClicks(),
-                shortUrl.getUser().getFirstName()
+                name
         );
     }
 
@@ -35,9 +36,7 @@ public class EntityMapperService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getShortUrls().stream().map(
-                        this::toShortUrlDTO
-                ).toList()
+                user.getShortUrls().stream().map(this::toShortUrlDTO).toList()
         );
     }
 

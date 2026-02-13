@@ -43,7 +43,7 @@ public class AuthService {
 
     public UserWithoutUrlsDTO register(RegisterUserDTO dto) {
         if (repo.findByEmail(dto.email()) != null) {
-            throw new ResourceNotFoundException("Email already in use");
+            throw new IllegalArgumentException("Email already in use");
         }
 
         User user = new User(
@@ -58,6 +58,9 @@ public class AuthService {
         return entityMapper.toUserWithoutUrlsDTO(user);
     }
 
-    public User getCurrentUser() { Authentication auth = SecurityContextHolder.getContext().getAuthentication(); return (User) auth.getPrincipal(); }
+    public User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (User) auth.getPrincipal();
+    }
 }
 
