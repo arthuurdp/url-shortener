@@ -26,4 +26,6 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
 
     @EntityGraph(attributePaths = {"user"})
     Optional<ShortUrl> findByShortKey(String shortKey);
+
+    boolean existsByShortKey(String shortKey);
 }

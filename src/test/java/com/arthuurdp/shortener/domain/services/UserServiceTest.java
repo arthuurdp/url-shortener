@@ -3,6 +3,7 @@ package com.arthuurdp.shortener.domain.services;
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.user.*;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
+import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +26,12 @@ class UserServiceTest {
 
     @Mock
     private EntityMapperService entityMapper;
+
+    @Mock
+    private AuthService authService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -90,28 +98,43 @@ class UserServiceTest {
                 "Napoleão",
                 "Bonaparte",
                 "napoleao@test.com",
-                null,
+                "newpassword",
                 Role.ROLE_ADMIN
         );
 
+        UserWithoutUrlsDTO responseDTO = new UserWithoutUrlsDTO(
+                USER_ID,
+                "Napoleão",
+                "Bonaparte",
+                "napoleao@test.com",
+                Role.ROLE_ADMIN
+        );
+
+        User adminUser = new User(2L, "Admin", "User", "admin@test.com", "pass", Role.ROLE_ADMIN);
+
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class)))
-                .thenReturn(user);
-        when(entityMapper.toUserWithUrlsDTO(user))
-                .thenReturn(userWithUrlsDTO);
+        when(authService.getCurrentUser())
+                .thenReturn(adminUser);
+        when(passwordEncoder.encode(anyString()))
+                .thenReturn("encodedPassword");
+        when(entityMapper.toUserWithoutUrlsDTO(any(User.class)))
+                .thenReturn(responseDTO);
 
         UserWithoutUrlsDTO result = userService.updateUser(USER_ID, updateDTO);
 
         assertNotNull(result);
+        assertEquals("napoleao@test.com", result.email());
 
         verify(userRepository).findById(USER_ID);
-        verify(userRepository).save(any(User.class));
-        verify(entityMapper).toUserWithUrlsDTO(user);
+        verify(authService).getCurrentUser();
+        verify(entityMapper).toUserWithoutUrlsDTO(any(User.class));
     }
 
     @Test
     void testDeleteUser_Success() {
+        User adminUser = new User(2L, "Admin", "User", "admin@test.com", "pass", Role.ROLE_ADMIN);
+        when(authService.getCurrentUser()).thenReturn(adminUser);
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.of(user));
 
@@ -123,6 +146,8 @@ class UserServiceTest {
 
     @Test
     void testDeleteUser_NotFound() {
+        User adminUser = new User(2L, "Admin", "User", "admin@test.com", "pass", Role.ROLE_ADMIN);
+        when(authService.getCurrentUser()).thenReturn(adminUser);
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.empty());
 

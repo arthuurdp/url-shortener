@@ -1,18 +1,17 @@
 package com.arthuurdp.shortener.domain.services;
 
 import com.arthuurdp.shortener.domain.entities.enums.Role;
-import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
-import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTO;
-import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
-import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
+import com.arthuurdp.shortener.domain.entities.url.*;
 import com.arthuurdp.shortener.domain.entities.user.User;
 import com.arthuurdp.shortener.domain.repositories.ShortUrlRepository;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -50,10 +49,17 @@ public class ShortUrlService {
     @Transactional
     public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
         User user = authService.getCurrentUser();
-        ShortUrl url = new ShortUrl(dto.originalUrl(), user);
 
+        if (dto.customKey() != null && !dto.customKey().isBlank()) {
+            if (repo.existsByShortKey(dto.customKey())) {
+                throw new DataIntegrityViolationException("Custom key already in use");
+            }
+        }
+
+        ShortUrl url = new ShortUrl(dto.originalUrl(), user);
         url = repo.save(url);
-        String key = keyGenerator.encode(url.getId());
+
+        String key = (dto.customKey() != null && !dto.customKey().isBlank()) ? dto.customKey() : keyGenerator.encode(url.getId());
         url.setShortKey(key);
 
         return entityMapper.toCreateShortUrlDTOResponse(url);
@@ -61,20 +67,15 @@ public class ShortUrlService {
 
     @Transactional
     public String getOriginalUrl(String shortKey) {
-        ShortUrl url = repo.findByShortKey(shortKey).orElseThrow(() -> new ResourceNotFoundException("Original url not found: " + shortKey));
+        ShortUrl url = repo.findByShortKey(shortKey).orElseThrow(() -> new ResourceNotFoundException("Original url not found"));
         url.incrementClicks();
         return url.getOriginalUrl();
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or @authService.isUrlOwner(#id)")
     public void deleteById(Long id) {
-        User user = authService.getCurrentUser();
         ShortUrl url = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("URL not found"));
-
-        if (!url.getUser().getId().equals(user.getId())) {
-            throw new ResourceNotFoundException("URL not found");
-        }
-
         repo.deleteById(id);
     }
 

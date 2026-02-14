@@ -57,7 +57,7 @@ class ShortUrlServiceTest {
                 "user@test.com", "password", Role.ROLE_USER);
 
         shortUrl = new ShortUrl(ORIGINAL_URL, user);
-        createDTO = new CreateShortUrlDTO(ORIGINAL_URL);
+        createDTO = new CreateShortUrlDTO(ORIGINAL_URL, null);
     }
 
     @Test
@@ -86,7 +86,7 @@ class ShortUrlServiceTest {
 
         when(authService.getCurrentUser()).thenReturn(user);
 
-        when(shortUrlRepository.saveAndFlush(any(ShortUrl.class)))
+        when(shortUrlRepository.save(any(ShortUrl.class)))
                 .thenAnswer(invocation -> {
                     ShortUrl url = invocation.getArgument(0);
 
@@ -108,14 +108,46 @@ class ShortUrlServiceTest {
         assertNotNull(result);
         assertEquals(SHORT_KEY, result.shortKey());
 
-        verify(shortUrlRepository).saveAndFlush(any());
+        verify(shortUrlRepository).save(any());
         verify(keyGenerator).encode(URL_ID);
     }
 
     @Test
+    void testCreateShortUrl_WithCustomKey_Success() {
+        String customKey = "my-custom-key";
+        CreateShortUrlDTO customDTO = new CreateShortUrlDTO(ORIGINAL_URL, customKey);
+        CreateShortUrlDTOResponse response = new CreateShortUrlDTOResponse(customKey);
+
+        when(authService.getCurrentUser()).thenReturn(user);
+        when(shortUrlRepository.existsByShortKey(customKey)).thenReturn(false);
+        when(shortUrlRepository.save(any(ShortUrl.class))).thenReturn(shortUrl);
+        when(entityMapper.toCreateShortUrlDTOResponse(any(ShortUrl.class))).thenReturn(response);
+
+        CreateShortUrlDTOResponse result = shortUrlService.createShortUrl(customDTO);
+
+        assertEquals(customKey, result.shortKey());
+        verify(shortUrlRepository).existsByShortKey(customKey);
+        verify(shortUrlRepository).save(any());
+        verify(keyGenerator, never()).encode(anyLong());
+    }
+
+    @Test
+    void testCreateShortUrl_WithCustomKey_AlreadyInUse() {
+        String customKey = "already-taken";
+        CreateShortUrlDTO customDTO = new CreateShortUrlDTO(ORIGINAL_URL, customKey);
+
+        when(authService.getCurrentUser()).thenReturn(user);
+        when(shortUrlRepository.existsByShortKey(customKey)).thenReturn(true);
+
+        assertThrows(org.springframework.dao.DataIntegrityViolationException.class,
+                () -> shortUrlService.createShortUrl(customDTO));
+
+        verify(shortUrlRepository, never()).save(any());
+    }
+
+    @Test
     void testGetOriginalUrl_Success() {
-        when(shortUrlRepository.findByShortKey(SHORT_KEY))
-                .thenReturn(Optional.of(shortUrl));
+        when(shortUrlRepository.findByShortKey(SHORT_KEY)).thenReturn(Optional.of(shortUrl));
 
         String result = shortUrlService.getOriginalUrl(SHORT_KEY);
 
@@ -127,8 +159,7 @@ class ShortUrlServiceTest {
 
     @Test
     void testGetOriginalUrl_NotFound() {
-        when(shortUrlRepository.findByShortKey("invalid"))
-                .thenReturn(Optional.empty());
+        when(shortUrlRepository.findByShortKey("invalid")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> shortUrlService.getOriginalUrl("invalid"));
@@ -138,9 +169,7 @@ class ShortUrlServiceTest {
 
     @Test
     void testDeleteById_Success() {
-        when(authService.getCurrentUser()).thenReturn(user);
-        when(shortUrlRepository.findById(URL_ID))
-                .thenReturn(Optional.of(shortUrl));
+        when(shortUrlRepository.findById(URL_ID)).thenReturn(Optional.of(shortUrl));
 
         shortUrlService.deleteById(URL_ID);
 
@@ -149,18 +178,8 @@ class ShortUrlServiceTest {
 
     @Test
     void testDeleteById_ResourceNotFound() {
-        User otherUser = new User(
-                USER2_ID,
-                "Other",
-                "User",
-                "other@test.com",
-                "password",
-                Role.ROLE_USER
-        );
-
-        when(authService.getCurrentUser()).thenReturn(otherUser);
         when(shortUrlRepository.findById(URL_ID))
-                .thenReturn(Optional.of(shortUrl));
+                .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> shortUrlService.deleteById(URL_ID));
