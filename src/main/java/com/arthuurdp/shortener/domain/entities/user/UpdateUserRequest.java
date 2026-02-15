@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
 // admins can update everything, except his own role
-public record UpdateUserDTO(
+public record UpdateUserRequest(
         String firstName,
 
         String lastName,

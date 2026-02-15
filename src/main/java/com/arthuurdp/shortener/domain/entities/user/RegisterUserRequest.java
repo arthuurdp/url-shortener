@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-// register a user, only admin
-public record RegisterUserDTO(
+public record RegisterUserRequest(
         @NotBlank(message = "First name is required")
         String firstName,
 

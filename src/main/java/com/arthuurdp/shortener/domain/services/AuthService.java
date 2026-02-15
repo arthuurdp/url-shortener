@@ -2,7 +2,6 @@ package com.arthuurdp.shortener.domain.services;
 
 import com.arthuurdp.shortener.domain.entities.user.*;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
-import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import com.arthuurdp.shortener.infrastructure.security.TokenService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,14 +33,14 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public LoginResponseDTO login(AuthDTO dto) {
+    public LoginResponse login(LoginRequest dto) {
         var tokenAuth = new UsernamePasswordAuthenticationToken(dto.email(), dto.password());
         var auth = authManager.authenticate(tokenAuth);
         var token = tokenService.generateToken((User) auth.getPrincipal());
-        return new LoginResponseDTO(token);
+        return new LoginResponse(token);
     }
 
-    public UserWithoutUrlsDTO register(RegisterUserDTO dto) {
+    public UserWithoutUrlsDTO register(RegisterUserRequest dto) {
         if (repo.findByEmail(dto.email()) != null) {
             throw new IllegalArgumentException("Email already in use");
         }

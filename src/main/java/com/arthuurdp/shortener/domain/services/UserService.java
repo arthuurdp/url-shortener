@@ -2,7 +2,7 @@ package com.arthuurdp.shortener.domain.services;
 
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.user.User;
-import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
+import com.arthuurdp.shortener.domain.entities.user.UpdateUserRequest;
 import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
@@ -45,7 +45,7 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
-    public UserWithoutUrlsDTO updateUser(Long id, UpdateUserDTO dto) {
+    public UserWithoutUrlsDTO updateUser(Long id, UpdateUserRequest dto) {
         User targetUser = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (dto.firstName() != null && !dto.firstName().isBlank()) {
@@ -87,16 +87,16 @@ public class UserService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public void deleteUser(Long id) {
-
         User currentUser = authService.getCurrentUser();
         User targetUser = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (currentUser.getId().equals(targetUser.getId())) {
-            throw new AccessDeniedException("Administrators cannot delete themselves");
+        if (currentUser.getRole() == Role.ROLE_ADMIN) {
+            if (currentUser.getId().equals(targetUser.getId())) {
+                throw new AccessDeniedException("Administrators cannot delete themselves");
+            }
         }
-
         repo.delete(targetUser);
     }
 

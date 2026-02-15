@@ -47,7 +47,7 @@ public class ShortUrlService {
     }
 
     @Transactional
-    public CreateShortUrlDTOResponse createShortUrl(CreateShortUrlDTO dto) {
+    public CreateShortUrlResponse createShortUrl(CreateShortUrlRequest dto) {
         User user = authService.getCurrentUser();
 
         if (dto.customKey() != null && !dto.customKey().isBlank()) {

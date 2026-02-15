@@ -1,7 +1,7 @@
 package com.arthuurdp.shortener.domain.controllers;
 
-import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTO;
-import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
+import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlRequest;
+import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlResponse;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.services.ShortUrlService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,8 +72,8 @@ public class ShortUrlController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<CreateShortUrlDTOResponse> createShortUrl(@Valid @RequestBody CreateShortUrlDTO dto) {
-        CreateShortUrlDTOResponse created = service.createShortUrl(dto);
+    public ResponseEntity<CreateShortUrlResponse> createShortUrl(@Valid @RequestBody CreateShortUrlRequest dto) {
+        CreateShortUrlResponse created = service.createShortUrl(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/{shortKey}")

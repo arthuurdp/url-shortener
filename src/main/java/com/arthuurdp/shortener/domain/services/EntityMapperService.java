@@ -3,15 +3,15 @@ package com.arthuurdp.shortener.domain.services;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrl;
 import com.arthuurdp.shortener.domain.entities.url.ShortUrlDTO;
 import com.arthuurdp.shortener.domain.entities.user.User;
-import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlDTOResponse;
+import com.arthuurdp.shortener.domain.entities.url.CreateShortUrlResponse;
 import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EntityMapperService {
-    public CreateShortUrlDTOResponse toCreateShortUrlDTOResponse(ShortUrl shortUrl) {
-        return new CreateShortUrlDTOResponse(
+    public CreateShortUrlResponse toCreateShortUrlDTOResponse(ShortUrl shortUrl) {
+        return new CreateShortUrlResponse(
                 shortUrl.getShortKey()
         );
     }

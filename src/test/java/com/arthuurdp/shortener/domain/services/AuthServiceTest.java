@@ -15,6 +15,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.security.authentication.BadCredentialsException;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -44,14 +46,14 @@ class AuthServiceTest {
     private AuthService authService;
 
     private User user;
-    private AuthDTO authDTO;
-    private RegisterUserDTO registerDTO;
+    private LoginRequest loginRequest;
+    private RegisterUserRequest registerDTO;
 
     @BeforeEach
     void setUp() {
         user = new User(1L, "User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
-        authDTO = new AuthDTO("user@teste.com", "teste123");
-        registerDTO = new RegisterUserDTO("User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
+        loginRequest = new LoginRequest("user@teste.com", "teste123");
+        registerDTO = new RegisterUserRequest("User", "Test", "user@teste.com", "teste123", Role.ROLE_USER);
     }
 
     @Test
@@ -60,11 +62,20 @@ class AuthServiceTest {
         when(authentication.getPrincipal()).thenReturn(user);
         when(tokenService.generateToken(user)).thenReturn("token-123");
 
-        LoginResponseDTO result = authService.login(authDTO);
+        LoginResponse result = authService.login(loginRequest);
 
         assertNotNull(result);
         assertEquals("token-123", result.token());
         verify(authManager, times(1)).authenticate(any());
+    }
+
+    @Test
+    void testLogin_InvalidCredentials() {
+        when(authManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid credentials"));
+
+        assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest));
+        verify(authManager, times(1)).authenticate(any());
+        verify(tokenService, never()).generateToken(any());
     }
 
     @Test
@@ -86,7 +97,7 @@ class AuthServiceTest {
     void testRegister_EmailAlreadyExists() {
         when(userRepository.findByEmail(registerDTO.email())).thenReturn(user);
 
-        assertThrows(ResourceNotFoundException.class, () -> authService.register(registerDTO));
+        assertThrows(IllegalArgumentException.class, () -> authService.register(registerDTO));
         verify(userRepository, never()).save(any());
     }
 }

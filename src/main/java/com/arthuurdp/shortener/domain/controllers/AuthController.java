@@ -38,7 +38,7 @@ public class AuthController {
     })
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthDTO dto) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         return ResponseEntity.ok().body(service.login(dto));
     }
 
@@ -52,7 +52,7 @@ public class AuthController {
     })
 
     @PostMapping("/register")
-    public ResponseEntity<UserWithoutUrlsDTO> register(@RequestBody @Valid RegisterUserDTO dto) {
+    public ResponseEntity<UserWithoutUrlsDTO> register(@RequestBody @Valid RegisterUserRequest dto) {
         UserWithoutUrlsDTO response = service.register(dto);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

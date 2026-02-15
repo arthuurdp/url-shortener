@@ -1,6 +1,6 @@
 package com.arthuurdp.shortener.domain.controllers;
 
-import com.arthuurdp.shortener.domain.entities.user.UpdateUserDTO;
+import com.arthuurdp.shortener.domain.entities.user.UpdateUserRequest;
 import com.arthuurdp.shortener.domain.entities.user.UserWithUrlsDTO;
 import com.arthuurdp.shortener.domain.entities.user.UserWithoutUrlsDTO;
 import com.arthuurdp.shortener.domain.services.UserService;
@@ -68,7 +68,7 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
-    public ResponseEntity<UserWithoutUrlsDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO dto) {
+    public ResponseEntity<UserWithoutUrlsDTO> updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserRequest dto) {
         return ResponseEntity.ok().body(service.updateUser(id, dto));
     }
 

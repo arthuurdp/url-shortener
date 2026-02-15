@@ -49,7 +49,7 @@ class ShortUrlServiceTest {
 
     private User user;
     private ShortUrl shortUrl;
-    private CreateShortUrlDTO createDTO;
+    private CreateShortUrlRequest createDTO;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +57,7 @@ class ShortUrlServiceTest {
                 "user@test.com", "password", Role.ROLE_USER);
 
         shortUrl = new ShortUrl(ORIGINAL_URL, user);
-        createDTO = new CreateShortUrlDTO(ORIGINAL_URL, null);
+        createDTO = new CreateShortUrlRequest(ORIGINAL_URL, null);
     }
 
     @Test
@@ -82,7 +82,7 @@ class ShortUrlServiceTest {
 
     @Test
     void testCreateShortUrl_Success() throws Exception {
-        CreateShortUrlDTOResponse response = new CreateShortUrlDTOResponse(SHORT_KEY);
+        CreateShortUrlResponse response = new CreateShortUrlResponse(SHORT_KEY);
 
         when(authService.getCurrentUser()).thenReturn(user);
 
@@ -102,7 +102,7 @@ class ShortUrlServiceTest {
         when(entityMapper.toCreateShortUrlDTOResponse(any(ShortUrl.class)))
                 .thenReturn(response);
 
-        CreateShortUrlDTOResponse result =
+        CreateShortUrlResponse result =
                 shortUrlService.createShortUrl(createDTO);
 
         assertNotNull(result);
@@ -115,15 +115,15 @@ class ShortUrlServiceTest {
     @Test
     void testCreateShortUrl_WithCustomKey_Success() {
         String customKey = "my-custom-key";
-        CreateShortUrlDTO customDTO = new CreateShortUrlDTO(ORIGINAL_URL, customKey);
-        CreateShortUrlDTOResponse response = new CreateShortUrlDTOResponse(customKey);
+        CreateShortUrlRequest customDTO = new CreateShortUrlRequest(ORIGINAL_URL, customKey);
+        CreateShortUrlResponse response = new CreateShortUrlResponse(customKey);
 
         when(authService.getCurrentUser()).thenReturn(user);
         when(shortUrlRepository.existsByShortKey(customKey)).thenReturn(false);
         when(shortUrlRepository.save(any(ShortUrl.class))).thenReturn(shortUrl);
         when(entityMapper.toCreateShortUrlDTOResponse(any(ShortUrl.class))).thenReturn(response);
 
-        CreateShortUrlDTOResponse result = shortUrlService.createShortUrl(customDTO);
+        CreateShortUrlResponse result = shortUrlService.createShortUrl(customDTO);
 
         assertEquals(customKey, result.shortKey());
         verify(shortUrlRepository).existsByShortKey(customKey);
@@ -134,7 +134,7 @@ class ShortUrlServiceTest {
     @Test
     void testCreateShortUrl_WithCustomKey_AlreadyInUse() {
         String customKey = "already-taken";
-        CreateShortUrlDTO customDTO = new CreateShortUrlDTO(ORIGINAL_URL, customKey);
+        CreateShortUrlRequest customDTO = new CreateShortUrlRequest(ORIGINAL_URL, customKey);
 
         when(authService.getCurrentUser()).thenReturn(user);
         when(shortUrlRepository.existsByShortKey(customKey)).thenReturn(true);

@@ -3,7 +3,6 @@ package com.arthuurdp.shortener.domain.services;
 import com.arthuurdp.shortener.domain.entities.enums.Role;
 import com.arthuurdp.shortener.domain.entities.user.*;
 import com.arthuurdp.shortener.domain.repositories.UserRepository;
-import com.arthuurdp.shortener.domain.services.exceptions.AccessDeniedException;
 import com.arthuurdp.shortener.domain.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -94,7 +93,7 @@ class UserServiceTest {
 
     @Test
     void testUpdateUser_Success() {
-        UpdateUserDTO updateDTO = new UpdateUserDTO(
+        UpdateUserRequest updateDTO = new UpdateUserRequest(
                 "Napoleão",
                 "Bonaparte",
                 "napoleao@test.com",
